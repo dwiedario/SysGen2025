@@ -1,0 +1,237 @@
+---
+title: "Bulk Analysis"
+format: html
+editor: visual
+---
+```{r}
+#| include: false
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+suppressPackageStartupMessages(library(DESeq2))
+```
+
+
+## Introduction
+
+We use bulk cell data from the motor cortex of 22 mice (10 female, 11 male) aged 3 - 28 months to analyse transcriptomic changes in aging.
+
+
+## Read Data
+
+
+```{r}
+library(data.table)
+
+counts_file  <- "systems_genomics/bulk_counts_PRJNA875066_SRRsubset.tsv"
+meta_file    <- "systems_genomics/metadata_PRJNA875066_SRRsubset.tsv"
+
+counts <- fread(counts_file)
+meta   <- fread(meta_file)
+
+head(counts)
+head(meta)
+
+```
+
+
+```{r}
+gene_col <- colnames(counts)[1]
+
+counts_mat <- as.data.frame(counts)
+rownames(counts_mat) <- counts_mat[[gene_col]]
+
+counts_mat <- counts_mat[, -1]
+
+head(counts_mat)
+
+```
+```{r}
+
+metadata_clean <- meta
+metadata_clean$sex       <- factor(metadata_clean$sex)
+metadata_clean$age_month <- as.numeric(metadata_clean$age_month)
+
+metadata_clean$tissue <- NULL
+
+metadata_clean
+
+
+```
+## QC / Normalization / Exploratory Data Analysis
+
+```{r}
+library(DESeq2)
+
+# Center age for stabilized model
+metadata_clean$age_month <- as.numeric(metadata_clean$age_month)
+metadata_clean$age_c <- metadata_clean$age_month - mean(metadata_clean$age_month)
+
+# DESeqDataSet initialization
+dds <- DESeqDataSetFromMatrix(
+  countData = round(counts_mat),
+  colData   = metadata_clean,
+  design    = ~ sex + age_c
+)
+
+# Filter low expressed genes
+keep <- rowSums(counts(dds)) >= 10
+dds <- dds[keep, ]
+
+# Fit model (normalization + dispersion estimation done internally)
+dds <- DESeq(dds)
+
+# Variance stabilizing transformation for QC-Plots
+vsd <- vst(dds, blind = FALSE)
+vsd_mat <- assay(vsd)
+```
+
+```{r}
+library(ggplot2)
+library(pheatmap)
+
+# PCA
+pca <- prcomp(t(vsd_mat))
+
+pca_df <- data.frame(
+  PC1 = pca$x[, 1],
+  PC2 = pca$x[, 2],
+  age_month = metadata_clean$age_month,
+  sex = metadata_clean$sex
+)
+
+ggplot(pca_df, aes(PC1, PC2, color = age_month, shape = sex)) +
+  geom_point(size = 3) +
+  scale_color_viridis_c() +
+  theme_minimal() +
+  labs(title = "PCA (vst-normalized)")
+
+
+```
+```{r}
+sampleDists <- dist(t(vsd_mat))
+sampleDistMatrix <- as.matrix(sampleDists)
+
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows = sampleDists,
+         clustering_distance_cols = sampleDists,
+         main = "Sample distances (vst)")
+
+```
+```{r}
+library(umap)
+
+# Chose most variables genes
+gene_var <- apply(vsd_mat, 1, var)
+var_genes <- names(sort(gene_var, decreasing = TRUE))[1:2000]
+
+mat_umap <- t(vsd_mat[vsd_mat, ])
+
+# UMAP
+set.seed(123)
+umap_res <- umap(mat_umap)
+
+umap_df <- data.frame(
+  UMAP1 = umap_res$layout[, 1],
+  UMAP2 = umap_res$layout[, 2],
+  age_month = metadata_clean$age_month,
+  sex = metadata_clean$sex,
+  sample = rownames(mat_umap)
+)
+
+ggplot(umap_df, aes(x = UMAP1, y = UMAP2,
+                    color = age_month, shape = sex, label = sample)) +
+  geom_point(size = 4) +
+  scale_color_viridis_c() +
+  theme_minimal() +
+  labs(title = "UMAP (vst, Top variable Genes)") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+## DE Analysis
+
+```{r}
+# DE analysis for age effect
+resultsNames(dds)
+res_age <- results(dds, name = "age_c")
+summary(res_age)
+```
+```{r}
+res_age_df <- as.data.frame(res_age)
+res_age_df$gene <- rownames(res_age_df)
+res_age_df <- res_age_df[!is.na(res_age_df$padj), ]
+
+sig_age <- subset(res_age_df, padj < 0.05)
+head(sig_age)
+```
+
+```{r}
+
+res_age_df$group <- "Not significant"
+res_age_df$group[res_age_df$padj < 0.05 & res_age_df$log2FoldChange > 0] <- "Up with age"
+res_age_df$group[res_age_df$padj < 0.05 & res_age_df$log2FoldChange < 0] <- "Down with age"
+
+ggplot(res_age_df,
+       aes(x = log2FoldChange, y = -log10(padj), color = group)) +
+  geom_point(alpha = 0.6) +
+  scale_color_manual(values = c(
+    "Not significant" = "grey60",
+    "Up with age" = "red",
+    "Down with age" = "blue"
+  )) +
+  theme_minimal() +
+  labs(color = "Category")
+
+
+```
+
+```{r}
+#| fig-width: 8
+#| fig-height: 6
+
+res_age_df <- res_age_df[!is.na(res_age_df$padj), ]
+sig_age <- res_age_df[res_age_df$padj < 0.05, ]
+sig_age <- sig_age[order(sig_age$padj), ]
+
+meta_df <- as.data.frame(metadata_clean)
+rownames(meta_df) <- meta_df$SRR
+annotation_col <- meta_df[colnames(vsd_mat), c("age_month", "sex")]
+
+top_n <- 40
+top_genes <- head(sig_age$gene, top_n)
+
+pheatmap(
+  vsd_mat[top_genes, ],
+  scale = "row",
+  clustering_method = "complete",
+  clustering_distance_rows = "euclidean",
+  clustering_distance_cols = "euclidean",
+  annotation_col = annotation_col,
+  show_rownames = TRUE,
+  show_colnames = TRUE,
+  fontsize_row = 7,
+  fontsize_col = 8,
+  cellheight = 7,
+  angle_col = 45,
+  main = "Top age-associated genes in motor cortex"
+)
+
+```
+
+## ToDo / Ideas
+
+```{r}
+# - Show trends / trajectories for select genes
+# - Are changes sex specific?
+# - GO / KEGG Annotations
+# - Gene Set Enrichment Analysis?
+```
+
+
+```{r}
+
+
+
+```
+
+
+
