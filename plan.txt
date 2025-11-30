@@ -1,4 +1,4 @@
-Pseudo Bulk analysis
+Bulk analysis
 	UMAP etc
 	Age specific DE
 	is it sex specific?
@@ -7,7 +7,7 @@ Pseudo Bulk analysis
 
 
 
-Single cell
+Single cell (do we have that data?)
 	Cluster cells, assign cell type
 	repeat same but cell type specific
 	Changes in cell type proportions with age ?
