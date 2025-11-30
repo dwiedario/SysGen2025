@@ -1,0 +1,23 @@
+SRR	GSM	BulkSeq	tissue	sex	age_month
+SRR21355241	GSM6527217	BulkSeq_cor_35	Motor cortex	Male	18
+SRR21355242	GSM6527216	BulkSeq_cor_34	Motor cortex	Male	15
+SRR21355243	GSM6527215	BulkSeq_cor_33	Motor cortex	Male	3
+SRR21355246	GSM6527211	BulkSeq_cor_30	Motor cortex	Male	15
+SRR21355249	GSM6527208	BulkSeq_cor_28	Motor cortex	Male	21
+SRR21355250	GSM6527207	BulkSeq_cor_27	Motor cortex	Male	18
+SRR21355256	GSM6527200	BulkSeq_cor_21	Motor cortex	Male	3
+SRR21355360	GSM6527246	BulkSeq_cor_57	Motor cortex	Male	28
+SRR21355364	GSM6527241	BulkSeq_cor_53	Motor cortex	Female	3
+SRR21355366	GSM6527239	BulkSeq_cor_51	Motor cortex	Female	18
+SRR21355367	GSM6527238	BulkSeq_cor_50	Motor cortex	Female	15
+SRR21355374	GSM6527229	BulkSeq_cor_44	Motor cortex	Female	21
+SRR21355378	GSM6527224	BulkSeq_cor_40	Motor cortex	Female	21
+SRR21355380	GSM6527222	BulkSeq_cor_39	Motor cortex	Female	18
+SRR21355381	GSM6527221	BulkSeq_cor_38	Motor cortex	Female	15
+SRR21355382	GSM6527219	BulkSeq_cor_37	Motor cortex	Female	3
+SRR21355383	GSM6527218	BulkSeq_cor_36	Motor cortex	Male	21
+SRR21355697	GSM6527252	BulkSeq_cor_8	Motor cortex	Male	26
+SRR21355698	GSM6527250	BulkSeq_cor_7	Motor cortex	Female	12
+SRR21355699	GSM6527249	BulkSeq_cor_6	Motor cortex	Male	12
+SRR21355703	GSM6527188	BulkSeq_cor_12	Motor cortex	Male	12
+SRR21355705	GSM6527186	BulkSeq_cor_10	Motor cortex	Female	12

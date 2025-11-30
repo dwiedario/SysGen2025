@@ -1,0 +1,21 @@
+Pseudo Bulk analysis
+	UMAP etc
+	Age specific DE
+	is it sex specific?
+	Volcano, Heatmap, GO...
+	maybe WGCNA
+
+
+
+Single cell
+	Cluster cells, assign cell type
+	repeat same but cell type specific
+	Changes in cell type proportions with age ?
+
+
+
+Spatial (does this make sense? i think the spatial thing would be including all data)
+	maybe identify L1-L6 regions via marker genes?
+
+	Take top DE genes -> calculate score
+	Visualize score spatially for time points
