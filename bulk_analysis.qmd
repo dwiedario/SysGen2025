@@ -3,25 +3,23 @@ title: "Bulk Analysis"
 format: html
 editor: visual
 ---
+
 ```{r}
 #| include: false
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 suppressPackageStartupMessages(library(DESeq2))
 ```
 
-
 ## Introduction
 
 We use bulk cell data from the motor cortex of 22 mice (10 female, 11 male) aged 3 - 28 months to analyse transcriptomic changes in aging.
 
-
 ## Read Data
-
 
 ```{r}
 library(data.table)
 
-counts_file  <- "systems_genomics/bulk_counts_PRJNA875066_SRRsubset.tsv"
+counts_file  <- "systems_genomics/counts_from_seqmonk_all_genes.tsv"
 meta_file    <- "systems_genomics/metadata_PRJNA875066_SRRsubset.tsv"
 
 counts <- fread(counts_file)
@@ -32,18 +30,24 @@ head(meta)
 
 ```
 
-
 ```{r}
 gene_col <- colnames(counts)[1]
+genes <- counts[[gene_col]]
 
-counts_mat <- as.data.frame(counts)
-rownames(counts_mat) <- counts_mat[[gene_col]]
+counts_num <- as.matrix(counts[, -1])
 
-counts_mat <- counts_mat[, -1]
+
+counts_mat <- rowsum(counts_num, group = genes)
+
+
+any(duplicated(rownames(counts_mat)))
 
 head(counts_mat)
 
+
+
 ```
+
 ```{r}
 
 metadata_clean <- meta
@@ -56,6 +60,7 @@ metadata_clean
 
 
 ```
+
 ## QC / Normalization / Exploratory Data Analysis
 
 ```{r}
@@ -106,6 +111,7 @@ ggplot(pca_df, aes(PC1, PC2, color = age_month, shape = sex)) +
 
 
 ```
+
 ```{r}
 sampleDists <- dist(t(vsd_mat))
 sampleDistMatrix <- as.matrix(sampleDists)
@@ -116,6 +122,7 @@ pheatmap(sampleDistMatrix,
          main = "Sample distances (vst)")
 
 ```
+
 ```{r}
 library(umap)
 
@@ -155,6 +162,7 @@ resultsNames(dds)
 res_age <- results(dds, name = "age_c")
 summary(res_age)
 ```
+
 ```{r}
 res_age_df <- as.data.frame(res_age)
 res_age_df$gene <- rownames(res_age_df)
@@ -222,16 +230,13 @@ pheatmap(
 ```{r}
 # - Show trends / trajectories for select genes
 # - Are changes sex specific?
+# - Why is PC1 associated with sex that strongly but little DE Genes in Sex observed?
 # - GO / KEGG Annotations
 # - Gene Set Enrichment Analysis?
 ```
-
 
 ```{r}
 
 
 
 ```
-
-
-
