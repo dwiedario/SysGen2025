@@ -230,13 +230,98 @@ pheatmap(
 ```{r}
 # - Show trends / trajectories for select genes
 # - Are changes sex specific?
-# - Why is PC1 associated with sex that strongly but little DE Genes in Sex observed?
-# - GO / KEGG Annotations
-# - Gene Set Enrichment Analysis?
+# - GO / KEGG Annotations -> additional notebook
+# - Gene Set Enrichment Analysis? -> additional notebook
 ```
+
+## Visualisation of select genes
 
 ```{r}
 
-
+# To Do
 
 ```
+
+## Are DE genes in age sex specific?
+
+```{r}
+
+```
+
+
+## Why is PC1 associated with sex that strongly but little DE Genes in Sex observed?
+
+```{r}
+# DE analysis for sex effect
+res_sex <- results(dds, name = "sex_Male_vs_Female")
+summary(res_sex)
+```
+
+```{r}
+res_sex_df <- as.data.frame(res_sex)
+res_sex_df$gene <- rownames(res_sex_df)
+res_sex_df <- res_sex_df[!is.na(res_sex_df$padj), ]
+
+sig_sex <- subset(res_sex_df, padj < 0.05)
+head(sig_sex)
+```
+
+
+```{r}
+res_sex_df$group <- "Not significant"
+res_sex_df$group[res_sex_df$padj < 0.05 & res_sex_df$log2FoldChange > 0] <- "Up in male"
+res_sex_df$group[res_sex_df$padj < 0.05 & res_sex_df$log2FoldChange < 0] <- "Down in male"
+
+ggplot(res_sex_df,
+       aes(x = log2FoldChange, y = -log10(padj), color = group)) +
+  geom_point(alpha = 0.6) +
+  scale_color_manual(values = c(
+    "Not significant" = "grey60",
+    "Up in male" = "red",
+    "Down in male" = "blue"
+  )) +
+  theme_minimal() +
+  labs(color = "Category")
+
+```
+
+```{r}
+library(org.Mm.eg.db)
+library(AnnotationDbi)
+library(dplyr)
+
+id_type <- ifelse(grepl("^ENS", sig_sex$gene[1]), "ENSEMBL", "SYMBOL")
+
+annot <- AnnotationDbi::select(
+  org.Mm.eg.db,
+  keys    = sig_sex$gene,
+  keytype = id_type,
+  columns = c("SYMBOL", "GENENAME")
+)
+
+
+sig_sex_annot <- sig_sex %>%
+  left_join(annot, by = c("gene" = id_type))
+
+head(sig_sex_annot)
+
+```
+
+
+In the PC1 we observed a big variance in gene counts by gender. In the DESeq2 analysis we only observe very few genes that get a significant p-value. This could possibly be because a variety of small but wide-spread physiological changes in the mice can be observed by sex that also affect gene expression. But when adjusting p-value and FDR in DESeq2 these get filtered as noise rather than actual biological signal.
+It then also makes sense that the significant sex-DE genes are not known sex-specific markers.
+
+
+## Save Data
+
+```{r}
+
+dir.create("results", showWarnings = FALSE)
+
+saveRDS(dds,        file = "results/dds_sex_age.rds")
+saveRDS(vsd,        file = "results/vsd_sex_age.rds")
+saveRDS(res_age_df, file = "results/res_age_df.rds")
+saveRDS(sig_age,    file = "results/sig_age_df.rds")
+
+```
+

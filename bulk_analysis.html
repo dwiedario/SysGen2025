@@ -468,9 +468,132 @@ low counts [2]     : 6023, 27%
 <div class="cell">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># - Show trends / trajectories for select genes</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co"># - Are changes sex specific?</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co"># - Why is PC1 associated with sex that strongly but little DE Genes in Sex observed?</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co"># - GO / KEGG Annotations</span></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="co"># - Gene Set Enrichment Analysis?</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co"># - GO / KEGG Annotations -&gt; additional notebook</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co"># - Gene Set Enrichment Analysis? -&gt; additional notebook</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="visualisation-of-select-genes" class="level2">
+<h2 class="anchored" data-anchor-id="visualisation-of-select-genes">Visualisation of select genes</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># To Do</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="are-de-genes-in-age-sex-specific" class="level2">
+<h2 class="anchored" data-anchor-id="are-de-genes-in-age-sex-specific">Are DE genes in age sex specific?</h2>
+</section>
+<section id="why-is-pc1-associated-with-sex-that-strongly-but-little-de-genes-in-sex-observed" class="level2">
+<h2 class="anchored" data-anchor-id="why-is-pc1-associated-with-sex-that-strongly-but-little-de-genes-in-sex-observed">Why is PC1 associated with sex that strongly but little DE Genes in Sex observed?</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># DE analysis for sex effect</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>res_sex <span class="ot">&lt;-</span> <span class="fu">results</span>(dds, <span class="at">name =</span> <span class="st">"sex_Male_vs_Female"</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(res_sex)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+out of 22190 with nonzero total read count
+adjusted p-value &lt; 0.1
+LFC &gt; 0 (up)       : 15, 0.068%
+LFC &lt; 0 (down)     : 28, 0.13%
+outliers [1]       : 0, 0%
+low counts [2]     : 4302, 19%
+(mean count &lt; 3)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>res_sex_df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(res_sex)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>res_sex_df<span class="sc">$</span>gene <span class="ot">&lt;-</span> <span class="fu">rownames</span>(res_sex_df)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>res_sex_df <span class="ot">&lt;-</span> res_sex_df[<span class="sc">!</span><span class="fu">is.na</span>(res_sex_df<span class="sc">$</span>padj), ]</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>sig_sex <span class="ot">&lt;-</span> <span class="fu">subset</span>(res_sex_df, padj <span class="sc">&lt;</span> <span class="fl">0.05</span>)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(sig_sex)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           baseMean log2FoldChange      lfcSE      stat       pvalue
+Adora2a   18.228039     -0.7196193 0.18126051 -3.970083 7.184753e-05
+Bglap3     5.684059      1.6423075 0.39437976  4.164279 3.123375e-05
+Ccnd1    382.761220     -0.2589384 0.05792885 -4.469939 7.824178e-06
+Cd59a     43.586903     -0.5620998 0.13247184 -4.243164 2.203902e-05
+Cds1    1077.986482     -0.1506700 0.03075959 -4.898309 9.666477e-07
+Clec18a   28.120248     -0.6465664 0.14437743 -4.478307 7.523737e-06
+               padj    gene
+Adora2a 0.045900305 Adora2a
+Bglap3  0.022348375  Bglap3
+Ccnd1   0.007775494   Ccnd1
+Cd59a   0.017140606   Cd59a
+Cds1    0.001235100    Cds1
+Clec18a 0.007775494 Clec18a</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>res_sex_df<span class="sc">$</span>group <span class="ot">&lt;-</span> <span class="st">"Not significant"</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>res_sex_df<span class="sc">$</span>group[res_sex_df<span class="sc">$</span>padj <span class="sc">&lt;</span> <span class="fl">0.05</span> <span class="sc">&amp;</span> res_sex_df<span class="sc">$</span>log2FoldChange <span class="sc">&gt;</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> <span class="st">"Up in male"</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>res_sex_df<span class="sc">$</span>group[res_sex_df<span class="sc">$</span>padj <span class="sc">&lt;</span> <span class="fl">0.05</span> <span class="sc">&amp;</span> res_sex_df<span class="sc">$</span>log2FoldChange <span class="sc">&lt;</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> <span class="st">"Down in male"</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(res_sex_df,</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> log2FoldChange, <span class="at">y =</span> <span class="sc">-</span><span class="fu">log10</span>(padj), <span class="at">color =</span> group)) <span class="sc">+</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Not significant"</span> <span class="ot">=</span> <span class="st">"grey60"</span>,</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Up in male"</span> <span class="ot">=</span> <span class="st">"red"</span>,</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Down in male"</span> <span class="ot">=</span> <span class="st">"blue"</span></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">color =</span> <span class="st">"Category"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="bulk_analysis_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(org.Mm.eg.db)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(AnnotationDbi)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>id_type <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"^ENS"</span>, sig_sex<span class="sc">$</span>gene[<span class="dv">1</span>]), <span class="st">"ENSEMBL"</span>, <span class="st">"SYMBOL"</span>)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>annot <span class="ot">&lt;-</span> AnnotationDbi<span class="sc">::</span><span class="fu">select</span>(</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  org.Mm.eg.db,</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">keys    =</span> sig_sex<span class="sc">$</span>gene,</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">keytype =</span> id_type,</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"SYMBOL"</span>, <span class="st">"GENENAME"</span>)</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>sig_sex_annot <span class="ot">&lt;-</span> sig_sex <span class="sc">%&gt;%</span></span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(annot, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"gene"</span> <span class="ot">=</span> id_type))</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(sig_sex_annot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     baseMean log2FoldChange      lfcSE      stat       pvalue        padj
+1   18.228039     -0.7196193 0.18126051 -3.970083 7.184753e-05 0.045900305
+2    5.684059      1.6423075 0.39437976  4.164279 3.123375e-05 0.022348375
+3  382.761220     -0.2589384 0.05792885 -4.469939 7.824178e-06 0.007775494
+4   43.586903     -0.5620998 0.13247184 -4.243164 2.203902e-05 0.017140606
+5 1077.986482     -0.1506700 0.03075959 -4.898309 9.666477e-07 0.001235100
+6   28.120248     -0.6465664 0.14437743 -4.478307 7.523737e-06 0.007775494
+     gene                                 GENENAME
+1 Adora2a                   adenosine A2a receptor
+2  Bglap3    bone gamma-carboxyglutamate protein 3
+3   Ccnd1                                cyclin D1
+4   Cd59a                            CD59a antigen
+5    Cds1            CDP-diacylglycerol synthase 1
+6 Clec18a C-type lectin domain family 18, member A</code></pre>
+</div>
+</div>
+<p>In the PC1 we observed a big variance in gene counts by gender. In the DESeq2 analysis we only observe very few genes that get a significant p-value. This could possibly be because a variety of small but wide-spread physiological changes in the mice can be observed by sex that also affect gene expression. But when adjusting p-value and FDR in DESeq2 these get filtered as noise rather than actual biological signal. It then also makes sense that the significant sex-DE genes are not known sex-specific markers.</p>
+</section>
+<section id="save-data" class="level2">
+<h2 class="anchored" data-anchor-id="save-data">Save Data</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"results"</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(dds,        <span class="at">file =</span> <span class="st">"results/dds_sex_age.rds"</span>)</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(vsd,        <span class="at">file =</span> <span class="st">"results/vsd_sex_age.rds"</span>)</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(res_age_df, <span class="at">file =</span> <span class="st">"results/res_age_df.rds"</span>)</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(sig_age,    <span class="at">file =</span> <span class="st">"results/sig_age_df.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 
