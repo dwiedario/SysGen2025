@@ -1,0 +1,271 @@
+---
+title: "Bulk Analysis – GO & KEGG for Age-DE Genes"
+format: html
+editor: visual
+---
+
+```{r}
+#| include: false
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+
+suppressPackageStartupMessages({
+  library(DESeq2)
+  library(clusterProfiler)
+  library(org.Mm.eg.db)
+  library(dplyr)
+  library(enrichplot)
+})
+
+```
+## Load Data & Prepare gene list for GO & KEGG analysis
+
+
+```{r}
+dds        <- readRDS("results/dds_sex_age.rds")
+vsd        <- readRDS("results/vsd_sex_age.rds")
+res_age_df <- readRDS("results/res_age_df.rds")
+sig_age    <- readRDS("results/sig_age_df.rds")
+
+head(sig_age)
+
+```
+
+
+```{r}
+id_type <- ifelse(grepl("^ENS", res_age_df$gene[1]), "ENSEMBL", "SYMBOL")
+id_type
+
+# Universe = all tested genes with a padj (background)
+gene_universe <- res_age_df$gene[!is.na(res_age_df$padj)]
+
+# Significant age-DE genes
+sig_age_all   <- sig_age$gene
+sig_age_up    <- sig_age$gene[sig_age$padj < 0.05 & sig_age$log2FoldChange > 0]
+sig_age_down  <- sig_age$gene[sig_age$padj < 0.05 & sig_age$log2FoldChange < 0]
+
+length(gene_universe); length(sig_age_up); length(sig_age_down)
+
+
+```
+
+```{r}
+# Convert IDs to Entrez
+# Note: enrichGO() works fine with SYMBOLs and converts back to SYMBOL anyway so this is slightly redundant if we're correct... but KEGG needs Entrez 
+
+universe_entrez <- bitr(gene_universe,
+fromType = id_type,
+toType   = "ENTREZID",
+OrgDb    = org.Mm.eg.db) %>%
+distinct(ENTREZID)
+
+sig_up_entrez <- bitr(sig_age_up,
+fromType = id_type,
+toType   = "ENTREZID",
+OrgDb    = org.Mm.eg.db) %>%
+distinct(ENTREZID)
+
+sig_down_entrez <- bitr(sig_age_down,
+fromType = id_type,
+toType   = "ENTREZID",
+OrgDb    = org.Mm.eg.db) %>%
+distinct(ENTREZID)
+
+nrow(universe_entrez); nrow(sig_up_entrez); nrow(sig_down_entrez)
+
+```
+
+```{r}
+mapped <- bitr(gene_universe,
+               fromType = id_type,
+               toType   = "ENTREZID",
+               OrgDb    = org.Mm.eg.db)
+
+failed <- setdiff(gene_universe, mapped[[id_type]])
+head(failed)
+
+```
+Most are expected not to map as they're poorly annotated or predicted genes. But we can probably rescue some using ALIAS or ACCNUM mappings.
+
+```{r}
+
+rescue_alias <- AnnotationDbi::select(
+  org.Mm.eg.db,
+  keys    = failed,
+  keytype = "ALIAS",
+  columns = "ENTREZID"
+)
+
+rescue_accnum <- AnnotationDbi::select(
+  org.Mm.eg.db,
+  keys    = failed,
+  keytype = "ACCNUM",
+  columns = "ENTREZID"
+)
+
+rescue_alias <- rescue_alias %>% filter(!is.na(ENTREZID))
+rescue_accnum <- rescue_accnum %>% filter(!is.na(ENTREZID))
+```
+
+```{r}
+
+# merge rescued mappings
+rescue_all <- bind_rows(
+  rescue_alias  %>% mutate(input_id = ALIAS),
+  rescue_accnum %>% mutate(input_id = ACCNUM)
+) %>% distinct(ENTREZID, input_id, .keep_all = TRUE)
+
+# add tto all genes list
+universe_entrez <- sort(unique(c(universe_entrez$ENTREZID, rescue_all$ENTREZID)))
+
+## Add rescued Entrez IDs to sig_up / sig_down, if their input_id is in those sets
+
+# rescued genes that are in sig_age_up / sig_age_down
+rescue_up_entrez <- rescue_all$ENTREZID[rescue_all$input_id %in% sig_age_up]
+rescue_down_entrez <- rescue_all$ENTREZID[rescue_all$input_id %in% sig_age_down]
+
+# extend the existing Entrez vectors
+sig_up_entrez <- sort(unique(c(sig_up_entrez$ENTREZID, rescue_up_entrez)))
+sig_down_entrez <- sort(unique(c(sig_down_entrez$ENTREZID, rescue_down_entrez)))
+
+## Quick sanity checks
+length(universe_entrez); length(sig_up_entrez); length(sig_down_entrez)
+
+
+```
+
+
+## GO Enrichment Analysis
+
+```{r}
+ego_up <- enrichGO(
+gene          = sig_up_entrez,
+universe      = universe_entrez,
+OrgDb         = org.Mm.eg.db,
+keyType       = "ENTREZID",
+ont           = "BP",
+pAdjustMethod = "BH",
+qvalueCutoff  = 0.05,
+readable      = TRUE
+)
+
+ego_down <- enrichGO(
+gene          = sig_down_entrez,
+universe      = universe_entrez,
+OrgDb         = org.Mm.eg.db,
+keyType       = "ENTREZID",
+ont           = "BP",
+pAdjustMethod = "BH",
+qvalueCutoff  = 0.05,
+readable      = TRUE
+)
+
+#head(ego_up)
+#head(ego_down)
+
+```
+
+
+```{r}
+#| fig-width: 12
+
+dotplot(ego_up, showCategory = 15, title = "GO BP – Genes up with age", label_format = 60)
+
+```
+
+```{r}
+#| fig-width: 12
+
+dotplot(ego_down, showCategory = 15, title = "GO BP – Genes down with age", label_format = 60)
+
+```
+
+
+```{r}
+#| fig-width: 12
+#| 
+ego_up_simpl <- simplify(
+  ego_up,
+  cutoff = 0.7,          
+  by     = "p.adjust",
+  select_fun = min
+)
+
+dotplot(ego_up_simpl, showCategory = 15, title = "GO BP – up with age (simplified)", label_format = 60)
+
+```
+
+
+```{r}
+#| fig-width: 12
+#| 
+ego_down_simpl <- simplify(
+  ego_down,
+  cutoff = 0.7,          
+  by     = "p.adjust",
+  select_fun = min
+)
+
+dotplot(ego_down_simpl, showCategory = 15, title = "GO BP – down with age (simplified)", label_format = 60)
+```
+
+
+
+# KEGG Enrichment Analysis
+
+```{r}
+ekegg_up <- enrichKEGG(
+gene          = sig_up_entrez,
+universe      = universe_entrez,
+organism      = "mmu",
+pAdjustMethod = "BH",
+qvalueCutoff  = 0.05
+)
+
+ekegg_down <- enrichKEGG(
+gene          = sig_down_entrez,
+universe      = universe_entrez,
+organism      = "mmu",
+pAdjustMethod = "BH",
+qvalueCutoff  = 0.05
+)
+
+#head(ekegg_up)
+#head(ekegg_down)
+
+
+
+```
+```{r}
+#| fig-width: 12
+
+dotplot(ekegg_up, showCategory = 15, title = "KEGG – Genes up with age")
+
+```
+
+```{r}
+#| fig-width: 12
+
+dotplot(ekegg_down, showCategory = 15, title = "KEGG – Genes down with age")
+
+```
+
+
+```{r}
+
+
+```
+
+
+
+## Ideas / ToDo
+
+```{r}
+# GO Annotations for CC (cellular components) and MF (molecular functions) ontologies
+# Use simplify on GO BP -> similar method for KEGG?
+
+# Try out GSEA (gene set enrichment analysis) instead of ORA (over-representation analysis)
+# Try out other pathway databases, e.g. ReactomePA
+# Visualize enriched pathways with pathview
+
+```
+
