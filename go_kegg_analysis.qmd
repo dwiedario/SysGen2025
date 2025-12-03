@@ -14,6 +14,7 @@ suppressPackageStartupMessages({
   library(org.Mm.eg.db)
   library(dplyr)
   library(enrichplot)
+  library(ReactomePA)
 })
 
 ```
@@ -166,14 +167,14 @@ readable      = TRUE
 
 
 ```{r}
-#| fig-width: 12
+#| fig-width: 14
 
 dotplot(ego_up, showCategory = 15, title = "GO BP – Genes up with age", label_format = 60)
 
 ```
 
 ```{r}
-#| fig-width: 12
+#| fig-width: 14
 
 dotplot(ego_down, showCategory = 15, title = "GO BP – Genes down with age", label_format = 60)
 
@@ -181,7 +182,7 @@ dotplot(ego_down, showCategory = 15, title = "GO BP – Genes down with age", la
 
 
 ```{r}
-#| fig-width: 12
+#| fig-width: 14
 #| 
 ego_up_simpl <- simplify(
   ego_up,
@@ -196,7 +197,7 @@ dotplot(ego_up_simpl, showCategory = 15, title = "GO BP – up with age (simplif
 
 
 ```{r}
-#| fig-width: 12
+#| fig-width: 14
 #| 
 ego_down_simpl <- simplify(
   ego_down,
@@ -207,6 +208,159 @@ ego_down_simpl <- simplify(
 
 dotplot(ego_down_simpl, showCategory = 15, title = "GO BP – down with age (simplified)", label_format = 60)
 ```
+
+## GO CC & MF Analysis
+
+```{r}
+
+ego_cc_up <- enrichGO(
+gene          = sig_up_entrez,
+universe      = universe_entrez,
+OrgDb         = org.Mm.eg.db,
+keyType       = "ENTREZID",
+ont           = "CC",
+pAdjustMethod = "BH",
+qvalueCutoff  = 0.05,
+readable      = TRUE
+)
+
+ego_cc_down <- enrichGO(
+gene          = sig_down_entrez,
+universe      = universe_entrez,
+OrgDb         = org.Mm.eg.db,
+keyType       = "ENTREZID",
+ont           = "CC",
+pAdjustMethod = "BH",
+qvalueCutoff  = 0.05,
+readable      = TRUE
+)
+
+ego_mf_up <- enrichGO(
+gene          = sig_up_entrez,
+universe      = universe_entrez,
+OrgDb         = org.Mm.eg.db,
+keyType       = "ENTREZID",
+ont           = "MF",
+pAdjustMethod = "BH",
+qvalueCutoff  = 0.05,
+readable      = TRUE
+)
+
+ego_mf_down <- enrichGO(
+gene          = sig_down_entrez,
+universe      = universe_entrez,
+OrgDb         = org.Mm.eg.db,
+keyType       = "ENTREZID",
+ont           = "MF",
+pAdjustMethod = "BH",
+qvalueCutoff  = 0.05,
+readable      = TRUE
+)
+
+
+# head(ego_cc_up); head(ego_cc_down)
+
+# head(ego_mf_up); head(ego_mf_down)
+
+```
+
+
+```{r}
+#| fig-width: 14
+
+dotplot(ego_cc_up, showCategory = 15, title = "GO CC – Genes up with age", label_format = 60)
+```
+
+```{r}
+#| fig-width: 14
+
+dotplot(ego_cc_down, showCategory = 15, title = "GO CC – Genes down with age", label_format = 60)
+```
+
+```{r}
+#| fig-width: 14
+
+dotplot(ego_mf_up, showCategory = 15, title = "GO MF – Genes up with age", label_format = 60)
+```
+
+```{r}
+#| fig-width: 14
+
+dotplot(ego_mf_down, showCategory = 15, title = "GO MF – Genes down with age", label_format = 60)
+```
+
+## GO CC and MF simplified
+
+```{r}
+#| fig-width: 14
+
+ego_cc_up_simpl <- simplify(
+ego_cc_up,
+cutoff     = 0.7,
+by         = "p.adjust",
+select_fun = min
+)
+
+dotplot(ego_cc_up_simpl, showCategory = 15,
+title = "GO CC – up with age (simplified)",
+label_format = 60)
+
+```
+
+```{r}
+#| fig-width: 14
+
+ego_cc_down_simpl <- simplify(
+ego_cc_down,
+cutoff     = 0.7,
+by         = "p.adjust",
+select_fun = min
+)
+
+dotplot(ego_cc_down_simpl, showCategory = 15,
+title = "GO CC – down with age (simplified)",
+label_format = 60)
+
+```
+
+```{r}
+#| fig-width: 14
+
+ego_mf_up_simpl <- simplify(
+ego_mf_up,
+cutoff     = 0.7,
+by         = "p.adjust",
+select_fun = min
+)
+
+dotplot(ego_mf_up_simpl, showCategory = 15,
+title = "GO MF – up with age (simplified)",
+label_format = 60)
+
+```
+
+```{r}
+#| fig-width: 14
+
+ego_mf_down_simpl <- simplify(
+ego_mf_down,
+cutoff     = 0.7,
+by         = "p.adjust",
+select_fun = min
+)
+
+dotplot(ego_mf_down_simpl, showCategory = 15,
+title = "GO MF – down with age (simplified)",
+label_format = 60)
+
+```
+
+
+
+
+
+
+
 
 
 
@@ -236,22 +390,92 @@ qvalueCutoff  = 0.05
 
 ```
 ```{r}
-#| fig-width: 12
+#| fig-width: 14
 
 dotplot(ekegg_up, showCategory = 15, title = "KEGG – Genes up with age")
 
 ```
 
 ```{r}
-#| fig-width: 12
+#| fig-width: 14
 
 dotplot(ekegg_down, showCategory = 15, title = "KEGG – Genes down with age")
 
 ```
 
+## ReactomePA Analysis
 
 ```{r}
+reactome_up <- enrichPathway(
+  gene          = sig_up_entrez,
+  universe      = universe_entrez,
+  organism      = "mouse",
+  pAdjustMethod = "BH",
+  qvalueCutoff  = 0.05,
+  readable      = TRUE
+)
 
+reactome_down <- enrichPathway(
+  gene          = sig_down_entrez,
+  universe      = universe_entrez,
+  organism      = "mouse",
+  pAdjustMethod = "BH",
+  qvalueCutoff  = 0.05,
+  readable      = TRUE
+)
+
+# head(reactome_up)
+# head(reactome_down)
+
+
+```
+
+```{r}
+#| fig-width: 14
+
+dotplot(reactome_up, showCategory = 15, title = "Reactome – Genes up with age", label_format = 60)
+```
+
+```{r}
+#| fig-width: 14
+
+dotplot(reactome_down, showCategory = 15, title = "Reactome – Genes down with age", label_format = 60)
+```
+
+
+
+
+
+## Save results
+
+```{r}
+## Save results
+
+saveRDS(ego_up,           "results/go_bp_age_up.rds")
+saveRDS(ego_down,         "results/go_bp_age_down.rds")
+saveRDS(ekegg_up,         "results/kegg_age_up.rds")
+saveRDS(ekegg_down,       "results/kegg_age_down.rds")
+saveRDS(ego_up_simpl,     "results/go_bp_age_up_simpl.rds")
+saveRDS(ego_down_simpl,   "results/go_bp_age_down_simpl.rds")
+
+# Reactome
+
+saveRDS(reactome_up,      "results/reactome_age_up.rds")
+saveRDS(reactome_down,    "results/reactome_age_down.rds")
+
+# GO CC
+
+saveRDS(ego_cc_up,        "results/go_cc_age_up.rds")
+saveRDS(ego_cc_down,      "results/go_cc_age_down.rds")
+saveRDS(ego_cc_up_simpl,  "results/go_cc_age_up_simpl.rds")
+saveRDS(ego_cc_down_simpl,"results/go_cc_age_down_simpl.rds")
+
+# GO MF
+
+saveRDS(ego_mf_up,        "results/go_mf_age_up.rds")
+saveRDS(ego_mf_down,      "results/go_mf_age_down.rds")
+saveRDS(ego_mf_up_simpl,  "results/go_mf_age_up_simpl.rds")
+saveRDS(ego_mf_down_simpl,"results/go_mf_age_down_simpl.rds")
 
 ```
 
