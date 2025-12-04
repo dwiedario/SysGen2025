@@ -219,47 +219,64 @@ if (any(is.na(lfc_matrix))) {
 
 ```{r}
 # 2. Generate the Heatmap
+filename_output <- "LFC_Trajectory_Heatmap.pdf"
 
-max_down <- -1.5
-max_up <- 3.0
+  max_down <- -1.5
+  max_up <- 3.0
+    
+  # Define the number of colors in the color palette (must match the number of breaks)
+  num_colors <- 100 
+    
+  # 1. Create the color palette: Blue (down) -> White (zero) -> Red (up)
+  heatmap_colors <- colorRampPalette(c("blue", "white", "red"))(num_colors)
+    
+    # 2. Define the breaks for the color mapping
+    # We need breaks that span the asymmetric range [-1.5, 3.0]
+    # We will create two segments: one from min to 0, and one from 0 to max.
+    custom_breaks <- c(
+        seq(max_down, 0, length.out = floor(num_colors / 2) + 1), # Segment 1: Blue to White (includes 0)
+        seq(0 + (max_up / floor(num_colors / 2)), max_up, length.out = floor(num_colors / 2)) # Segment 2: White to Red
+    )
+    # Ensure no duplicates at zero and the length is correct (might need minor adjustment based on num_colors)
+    custom_breaks <- unique(custom_breaks)
+    
+    
+    pheatmap(
+      lfc_matrix,
+      scale = "none",
+      clustering_method = "complete",
+      clustering_distance_rows = "euclidean",
+      clustering_distance_cols = "euclidean",
+      show_rownames = TRUE,
+      show_colnames = TRUE,
+      cluster_cols = FALSE, 
+      main = "Gene Trajectory: Log2FC vs. 3-Month Baseline (Asymmetric Scale)",
+      
+     
+      color = heatmap_colors,
+      breaks = custom_breaks,
+      
+      
+      fontsize_row = 8,
+      fontsize_col = 10,
+      # Define the labels clearly based on the custom range
+      legend_breaks = c(max_down, 0, max_up),
+      legend_labels = c(paste0("Down (≤", max_down, ")"), "No Change", paste0("Up (≥", max_up, ")")),
+      
+      #Take out following 3 lines of codes to get original Heatmap
+      filename = filename_output,
+      width = 8,  # Width in inches
+      height = 10 # Height in inches
+  )
 
-# Define the number of colors in the color palette (must match the number of breaks)
-num_colors <- 100 
 
-# 1. Create the color palette: Blue (down) -> White (zero) -> Red (up)
-heatmap_colors <- colorRampPalette(c("blue", "white", "red"))(num_colors)
-
-# 2. Define the breaks for the color mapping
-# We need breaks that span the asymmetric range [-1.5, 3.0]
-# We will create two segments: one from min to 0, and one from 0 to max.
-custom_breaks <- c(
-    seq(max_down, 0, length.out = floor(num_colors / 2) + 1), # Segment 1: Blue to White (includes 0)
-    seq(0 + (max_up / floor(num_colors / 2)), max_up, length.out = floor(num_colors / 2)) # Segment 2: White to Red
-)
-# Ensure no duplicates at zero and the length is correct (might need minor adjustment based on num_colors)
-custom_breaks <- unique(custom_breaks)
-
+filename_output <- "LFC_Trajectory_Heatmap.pdf"
 
 pheatmap(
   lfc_matrix,
-  scale = "none",
-  clustering_method = "complete",
-  clustering_distance_rows = "euclidean",
-  clustering_distance_cols = "euclidean",
-  show_rownames = TRUE,
-  show_colnames = TRUE,
-  cluster_cols = FALSE, 
-  main = "Gene Trajectory: Log2FC vs. 3-Month Baseline (Asymmetric Scale)",
+  # ... rest of your pheatmap code ...
   
-  # --- NEW COLOR ARGUMENTS ---
-  color = heatmap_colors,
-  breaks = custom_breaks,
-  # --- END NEW COLOR ARGUMENTS ---
+  # --- ADD THESE ARGUMENTS ---
   
-  fontsize_row = 8,
-  fontsize_col = 10,
-  # Define the labels clearly based on the custom range
-  legend_breaks = c(max_down, 0, max_up),
-  legend_labels = c(paste0("Down (≤", max_down, ")"), "No Change", paste0("Up (≥", max_up, ")"))
 )
 ```
