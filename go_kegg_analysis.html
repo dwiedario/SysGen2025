@@ -108,20 +108,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(sig_age)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>               baseMean log2FoldChange       lfcSE       stat       pvalue
-Gpr17          135.2076    -0.05545569 0.005159486 -10.748297 6.036555e-27
-B230209E15Rik  931.9510     0.03665923 0.003998712   9.167759 4.829521e-20
-Pcdhb9         143.6307     0.04792075 0.005890385   8.135420 4.105139e-16
-Flywch1       3207.2727     0.01118075 0.001389860   8.044516 8.658668e-16
-Hapln2         134.7561     0.04952611 0.006167454   8.030236 9.728559e-16
-Klhl1           20.9120    -0.09170069 0.011756959  -7.799695 6.205706e-15
-                      padj          gene         group
-Gpr17         9.759298e-23         Gpr17 Down with age
-B230209E15Rik 3.903943e-16 B230209E15Rik   Up with age
-Pcdhb9        2.212260e-12        Pcdhb9   Up with age
-Flywch1       3.145632e-12       Flywch1   Up with age
-Hapln2        3.145632e-12        Hapln2   Up with age
-Klhl1         1.672128e-11         Klhl1 Down with age</code></pre>
+<pre><code>         baseMean log2FoldChange       lfcSE       stat       pvalue
+Gpr17    159.0450    -0.05890702 0.005351874 -11.006803 3.543541e-28
+Pcdhb9   181.7831     0.04646533 0.005433934   8.550956 1.220728e-17
+Hapln2   151.1742     0.05015503 0.006060622   8.275558 1.278549e-16
+Flywch1 3903.4383     0.01168213 0.001469826   7.947968 1.895949e-15
+Klhl1     25.9399    -0.08813600 0.011636957  -7.573801 3.624582e-14
+Cabp7    200.0974     0.03986813 0.005401458   7.380994 1.571120e-13
+                padj    gene         group
+Gpr17   5.015882e-24   Gpr17 Down with age
+Pcdhb9  8.639706e-14  Pcdhb9   Up with age
+Hapln2  6.032623e-13  Hapln2   Up with age
+Flywch1 6.709289e-12 Flywch1   Up with age
+Klhl1   1.026119e-10   Klhl1 Down with age
+Cabp7   3.706534e-10   Cabp7   Up with age</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -140,13 +140,13 @@ Klhl1         1.672128e-11         Klhl1 Down with age</code></pre>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(gene_universe); <span class="fu">length</span>(sig_age_up); <span class="fu">length</span>(sig_age_down)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 16167</code></pre>
+<pre><code>[1] 14155</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 257</code></pre>
+<pre><code>[1] 247</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 305</code></pre>
+<pre><code>[1] 279</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -173,13 +173,13 @@ Klhl1         1.672128e-11         Klhl1 Down with age</code></pre>
 <span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(universe_entrez); <span class="fu">nrow</span>(sig_up_entrez); <span class="fu">nrow</span>(sig_down_entrez)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 14405</code></pre>
+<pre><code>[1] 14142</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 242</code></pre>
+<pre><code>[1] 247</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 293</code></pre>
+<pre><code>[1] 279</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -191,11 +191,9 @@ Klhl1         1.672128e-11         Klhl1 Down with age</code></pre>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>failed <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(gene_universe, mapped[[id_type]])</span>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(failed)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "0610009B22Rik" "0610010F05Rik" "0610010K14Rik" "0610012G03Rik"
-[5] "0610040J01Rik" "1110008P14Rik"</code></pre>
+<pre><code>[1] "Alg10b"  "Bmt2"    "Bves"    "Cenpj"   "Commd1b" "Fut10"  </code></pre>
 </div>
 </div>
-<p>Most are expected not to map as they’re poorly annotated or predicted genes. But we can probably rescue some using ALIAS or ACCNUM mappings.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>rescue_alias <span class="ot">&lt;-</span> AnnotationDbi<span class="sc">::</span><span class="fu">select</span>(</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  org.Mm.eg.db,</span>
@@ -204,46 +202,35 @@ Klhl1         1.672128e-11         Klhl1 Down with age</code></pre>
 <span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="st">"ENTREZID"</span></span>
 <span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>rescue_accnum <span class="ot">&lt;-</span> AnnotationDbi<span class="sc">::</span><span class="fu">select</span>(</span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  org.Mm.eg.db,</span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">keys    =</span> failed,</span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">keytype =</span> <span class="st">"ACCNUM"</span>,</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="st">"ENTREZID"</span></span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>rescue_alias <span class="ot">&lt;-</span> rescue_alias <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(ENTREZID))</span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>rescue_accnum <span class="ot">&lt;-</span> rescue_accnum <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(ENTREZID))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>rescue_alias <span class="ot">&lt;-</span> rescue_alias <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(ENTREZID))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># merge rescued mappings</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>rescue_all <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  rescue_alias  <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">input_id =</span> ALIAS),</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  rescue_accnum <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">input_id =</span> ACCNUM)</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span> <span class="fu">distinct</span>(ENTREZID, input_id, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co"># add tto all genes list</span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>universe_entrez <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(<span class="fu">c</span>(universe_entrez<span class="sc">$</span>ENTREZID, rescue_all<span class="sc">$</span>ENTREZID)))</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="do">## Add rescued Entrez IDs to sig_up / sig_down, if their input_id is in those sets</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co"># add tto all genes list</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>universe_entrez <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(<span class="fu">c</span>(universe_entrez<span class="sc">$</span>ENTREZID, rescue_alias<span class="sc">$</span>ENTREZID)))</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Add rescued Entrez IDs to sig_up / sig_down, if their input_id is in those sets</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co"># rescued genes that are in sig_age_up / sig_age_down</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>rescue_up_entrez <span class="ot">&lt;-</span> rescue_alias<span class="sc">$</span>ENTREZID[rescue_alias<span class="sc">$</span>input_id <span class="sc">%in%</span> sig_age_up]</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>rescue_down_entrez <span class="ot">&lt;-</span> rescue_alias<span class="sc">$</span>ENTREZID[rescue_alias<span class="sc">$</span>input_id <span class="sc">%in%</span> sig_age_down]</span>
 <span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="co"># rescued genes that are in sig_age_up / sig_age_down</span></span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>rescue_up_entrez <span class="ot">&lt;-</span> rescue_all<span class="sc">$</span>ENTREZID[rescue_all<span class="sc">$</span>input_id <span class="sc">%in%</span> sig_age_up]</span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>rescue_down_entrez <span class="ot">&lt;-</span> rescue_all<span class="sc">$</span>ENTREZID[rescue_all<span class="sc">$</span>input_id <span class="sc">%in%</span> sig_age_down]</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="co"># extend the existing Entrez vectors</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>sig_up_entrez <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(<span class="fu">c</span>(sig_up_entrez<span class="sc">$</span>ENTREZID, rescue_up_entrez)))</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>sig_down_entrez <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(<span class="fu">c</span>(sig_down_entrez<span class="sc">$</span>ENTREZID, rescue_down_entrez)))</span>
 <span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="co"># extend the existing Entrez vectors</span></span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>sig_up_entrez <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(<span class="fu">c</span>(sig_up_entrez<span class="sc">$</span>ENTREZID, rescue_up_entrez)))</span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>sig_down_entrez <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(<span class="fu">c</span>(sig_down_entrez<span class="sc">$</span>ENTREZID, rescue_down_entrez)))</span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a><span class="do">## Quick sanity checks</span></span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(universe_entrez); <span class="fu">length</span>(sig_up_entrez); <span class="fu">length</span>(sig_down_entrez)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="do">## Quick sanity checks</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(universe_entrez); <span class="fu">length</span>(sig_up_entrez); <span class="fu">length</span>(sig_down_entrez)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 14765</code></pre>
+<pre><code>[1] 14151</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 252</code></pre>
+<pre><code>[1] 247</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 302</code></pre>
+<pre><code>[1] 279</code></pre>
 </div>
 </div>
 </section>

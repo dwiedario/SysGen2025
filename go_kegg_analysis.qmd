@@ -85,7 +85,6 @@ failed <- setdiff(gene_universe, mapped[[id_type]])
 head(failed)
 
 ```
-Most are expected not to map as they're poorly annotated or predicted genes. But we can probably rescue some using ALIAS or ACCNUM mappings.
 
 ```{r}
 
@@ -96,33 +95,22 @@ rescue_alias <- AnnotationDbi::select(
   columns = "ENTREZID"
 )
 
-rescue_accnum <- AnnotationDbi::select(
-  org.Mm.eg.db,
-  keys    = failed,
-  keytype = "ACCNUM",
-  columns = "ENTREZID"
-)
 
 rescue_alias <- rescue_alias %>% filter(!is.na(ENTREZID))
-rescue_accnum <- rescue_accnum %>% filter(!is.na(ENTREZID))
 ```
 
 ```{r}
 
 # merge rescued mappings
-rescue_all <- bind_rows(
-  rescue_alias  %>% mutate(input_id = ALIAS),
-  rescue_accnum %>% mutate(input_id = ACCNUM)
-) %>% distinct(ENTREZID, input_id, .keep_all = TRUE)
 
 # add tto all genes list
-universe_entrez <- sort(unique(c(universe_entrez$ENTREZID, rescue_all$ENTREZID)))
+universe_entrez <- sort(unique(c(universe_entrez$ENTREZID, rescue_alias$ENTREZID)))
 
 ## Add rescued Entrez IDs to sig_up / sig_down, if their input_id is in those sets
 
 # rescued genes that are in sig_age_up / sig_age_down
-rescue_up_entrez <- rescue_all$ENTREZID[rescue_all$input_id %in% sig_age_up]
-rescue_down_entrez <- rescue_all$ENTREZID[rescue_all$input_id %in% sig_age_down]
+rescue_up_entrez <- rescue_alias$ENTREZID[rescue_alias$input_id %in% sig_age_up]
+rescue_down_entrez <- rescue_alias$ENTREZID[rescue_alias$input_id %in% sig_age_down]
 
 # extend the existing Entrez vectors
 sig_up_entrez <- sort(unique(c(sig_up_entrez$ENTREZID, rescue_up_entrez)))

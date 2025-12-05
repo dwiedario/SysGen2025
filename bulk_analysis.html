@@ -107,7 +107,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(data.table)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>counts_file  <span class="ot">&lt;-</span> <span class="st">"systems_genomics/counts_from_seqmonk_all_genes.tsv"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>counts_file  <span class="ot">&lt;-</span> <span class="st">"systems_genomics/gene_counts.tsv"</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>meta_file    <span class="ot">&lt;-</span> <span class="st">"systems_genomics/metadata_PRJNA875066_SRRsubset.tsv"</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>counts <span class="ot">&lt;-</span> <span class="fu">fread</span>(counts_file)</span>
@@ -115,38 +115,38 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(counts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>              V1 SRR21355241 SRR21355242 SRR21355243 SRR21355246 SRR21355249
-          &lt;char&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;
-1: 4933401J01Rik           0           0           0           0           0
-2:          Xkr4         196         152         109          65         245
-3:       Gm37180          75          33          29          29          87
-4:       Gm37363          93          53          47          35         114
-5:       Gm37686          15          13          11           4          23
-6:        Gm1992           2           0           0           0           2
+<pre><code>               V1 SRR21355241 SRR21355242 SRR21355243 SRR21355246 SRR21355249
+           &lt;char&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;
+1: 9930111J21Rik1          12           7           2           3          13
+2: 9930111J21Rik2          11          12           7          12          39
+3:              a           1           0           0           0           0
+4:           A1cf           0           0           0           0           0
+5:            A2m           6           6           3           2          13
+6:          A2ml1         169         100          65          60         258
    SRR21355250 SRR21355256 SRR21355360 SRR21355364 SRR21355366 SRR21355367
          &lt;int&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;
-1:           0           0           0           0           0           0
-2:         141         168         213         183         193         469
-3:          54          79          65          72          68         135
-4:          78         112          91         107          89         175
-5:          15          15          19          26          19          31
-6:           1           0           3           3           1           3
+1:           2          10          13          13           8          15
+2:          15          19          12          22          22          26
+3:           1           0           0           0           0           0
+4:           0           0           0           1           0           0
+5:           6           5          11           9          15          11
+6:         105         209         123         192         130         289
    SRR21355374 SRR21355378 SRR21355380 SRR21355381 SRR21355382 SRR21355383
          &lt;int&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;
-1:           0           0           0           0           0           0
-2:         130         153          64         123         217         307
-3:          45          59          24          42          94          87
-4:          77          85          28          73         104         120
-5:          14          12           4          10          20          27
-6:           1           1           0           1           1           1
+1:           9           7           4           8          11          16
+2:          11          14           3           9          17          22
+3:           0           0           0           0           0           0
+4:           0           0           0           0           0           0
+5:           8          12           0           5           8          14
+6:         110         108          44         113         217         228
    SRR21355697 SRR21355698 SRR21355699 SRR21355703 SRR21355705
          &lt;int&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;
-1:           0           0           0           0           0
-2:         157         139          55         109         258
-3:          58          55          23          34          78
-4:          84          73          34          44          80
-5:          17          17           2           9          16
-6:           1           1           1           0           0</code></pre>
+1:          11           5           3           3          13
+2:          26          10           7          13          18
+3:           1           0           0           0           0
+4:           0           0           0           0           0
+5:          10           2           2           8          15
+6:         108         108          72         116         235</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(meta)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -176,41 +176,41 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(counts_mat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>              SRR21355241 SRR21355242 SRR21355243 SRR21355246 SRR21355249
-0610005C13Rik           2           2           4           1           6
-0610006L08Rik           0           0           0           0           0
-0610009B22Rik         276         177         133          90         364
-0610009E02Rik          39          27          15          14          48
-0610009L18Rik          27           8          15           6          33
-0610010F05Rik         528         351         271         152         575
-              SRR21355250 SRR21355256 SRR21355360 SRR21355364 SRR21355366
-0610005C13Rik           5           5           4           9           4
-0610006L08Rik           0           0           0           0           0
-0610009B22Rik         161         324         298         367         247
-0610009E02Rik          22          37          32          31          32
-0610009L18Rik          19          24          35          29          24
-0610010F05Rik         355         579         539         640         462
-              SRR21355367 SRR21355374 SRR21355378 SRR21355380 SRR21355381
-0610005C13Rik           7           3           3           1           3
-0610006L08Rik           0           0           0           0           0
-0610009B22Rik         509         205         164          82         176
-0610009E02Rik          74          22          22          13          25
-0610009L18Rik          51          15          19           7          14
-0610010F05Rik         993         374         316         135         315
-              SRR21355382 SRR21355383 SRR21355697 SRR21355698 SRR21355699
-0610005C13Rik           5           7           4           3           3
-0610006L08Rik           0           0           0           0           0
-0610009B22Rik         310         355         233         157         123
-0610009E02Rik          39          42          31          16           7
-0610009L18Rik          28          38          29          17           8
-0610010F05Rik         555         765         410         359         191
-              SRR21355703 SRR21355705
-0610005C13Rik           3          11
-0610006L08Rik           0           0
-0610009B22Rik         144         321
-0610009E02Rik          12          48
-0610009L18Rik          18          33
-0610010F05Rik         273         657</code></pre>
+<pre><code>               SRR21355241 SRR21355242 SRR21355243 SRR21355246 SRR21355249
+9930111J21Rik1          12           7           2           3          13
+9930111J21Rik2          11          12           7          12          39
+a                        1           0           0           0           0
+A1cf                     0           0           0           0           0
+A2m                      6           6           3           2          13
+A2ml1                  169         100          65          60         258
+               SRR21355250 SRR21355256 SRR21355360 SRR21355364 SRR21355366
+9930111J21Rik1           2          10          13          13           8
+9930111J21Rik2          15          19          12          22          22
+a                        1           0           0           0           0
+A1cf                     0           0           0           1           0
+A2m                      6           5          11           9          15
+A2ml1                  105         209         123         192         130
+               SRR21355367 SRR21355374 SRR21355378 SRR21355380 SRR21355381
+9930111J21Rik1          15           9           7           4           8
+9930111J21Rik2          26          11          14           3           9
+a                        0           0           0           0           0
+A1cf                     0           0           0           0           0
+A2m                     11           8          12           0           5
+A2ml1                  289         110         108          44         113
+               SRR21355382 SRR21355383 SRR21355697 SRR21355698 SRR21355699
+9930111J21Rik1          11          16          11           5           3
+9930111J21Rik2          17          22          26          10           7
+a                        0           0           1           0           0
+A1cf                     0           0           0           0           0
+A2m                      8          14          10           2           2
+A2ml1                  217         228         108         108          72
+               SRR21355703 SRR21355705
+9930111J21Rik1           3          13
+9930111J21Rik2          13          18
+a                        0           0
+A1cf                     0           0
+A2m                      8          15
+A2ml1                  116         235</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -369,13 +369,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(res_age)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
-out of 22190 with nonzero total read count
+out of 16378 with nonzero total read count
 adjusted p-value &lt; 0.1
-LFC &gt; 0 (up)       : 394, 1.8%
-LFC &lt; 0 (down)     : 481, 2.2%
+LFC &gt; 0 (up)       : 400, 2.4%
+LFC &lt; 0 (down)     : 460, 2.8%
 outliers [1]       : 0, 0%
-low counts [2]     : 6023, 27%
-(mean count &lt; 8)
+low counts [2]     : 2223, 14%
+(mean count &lt; 3)
 [1] see 'cooksCutoff' argument of ?results
 [2] see 'independentFiltering' argument of ?results</code></pre>
 </div>
@@ -388,20 +388,20 @@ low counts [2]     : 6023, 27%
 <span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>sig_age <span class="ot">&lt;-</span> <span class="fu">subset</span>(res_age_df, padj <span class="sc">&lt;</span> <span class="fl">0.05</span>)</span>
 <span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(sig_age)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                baseMean log2FoldChange       lfcSE      stat       pvalue
-0610040J01Rik   40.24682    -0.03177458 0.008263371 -3.845232 0.0001204386
-1110008P14Rik 1431.32376    -0.01074573 0.003051727 -3.521196 0.0004296049
-1500009L16Rik  145.05343    -0.01798273 0.005509540 -3.263926 0.0010987988
-1700010K23Rik   90.62607    -0.01978520 0.005173714 -3.824178 0.0001312093
-2410006H16Rik  126.64478     0.01690616 0.004779725  3.537056 0.0004046138
-2410018L13Rik   12.86684    -0.05129050 0.014866487 -3.450075 0.0005604304
-                     padj          gene
-0610040J01Rik 0.008690582 0610040J01Rik
-1110008P14Rik 0.020551978 1110008P14Rik
-1500009L16Rik 0.037251642 1500009L16Rik
-1700010K23Rik 0.009133929 1700010K23Rik
-2410006H16Rik 0.019682064 2410006H16Rik
-2410018L13Rik 0.024008503 2410018L13Rik</code></pre>
+<pre><code>         baseMean log2FoldChange       lfcSE      stat       pvalue
+Abca8a   44.98936    0.056975050 0.011600512  4.911425 9.041671e-07
+Abce1   843.94252   -0.010256438 0.002442041 -4.199945 2.669802e-05
+Abi3bp   29.63289   -0.042296206 0.009762766 -4.332400 1.474929e-05
+Actr10 1244.70081   -0.007358969 0.002319064 -3.173250 1.507426e-03
+Adam19   63.87814   -0.041805253 0.008160642 -5.122790 3.010477e-07
+Adam33   90.56341    0.028553400 0.008531109  3.346974 8.169885e-04
+               padj   gene
+Abca8a 2.133081e-04 Abca8a
+Abce1  3.072442e-03  Abce1
+Abi3bp 1.969587e-03 Abi3bp
+Actr10 4.436095e-02 Actr10
+Adam19 9.263761e-05 Adam19
+Adam33 2.942614e-02 Adam33</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -489,13 +489,13 @@ low counts [2]     : 6023, 27%
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(res_sex)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
-out of 22190 with nonzero total read count
+out of 16378 with nonzero total read count
 adjusted p-value &lt; 0.1
-LFC &gt; 0 (up)       : 15, 0.068%
-LFC &lt; 0 (down)     : 28, 0.13%
+LFC &gt; 0 (up)       : 15, 0.092%
+LFC &lt; 0 (down)     : 24, 0.15%
 outliers [1]       : 0, 0%
-low counts [2]     : 4302, 19%
-(mean count &lt; 3)
+low counts [2]     : 3493, 21%
+(mean count &lt; 11)
 [1] see 'cooksCutoff' argument of ?results
 [2] see 'independentFiltering' argument of ?results</code></pre>
 </div>
@@ -508,20 +508,20 @@ low counts [2]     : 4302, 19%
 <span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>sig_sex <span class="ot">&lt;-</span> <span class="fu">subset</span>(res_sex_df, padj <span class="sc">&lt;</span> <span class="fl">0.05</span>)</span>
 <span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(sig_sex)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>           baseMean log2FoldChange      lfcSE      stat       pvalue
-Adora2a   18.228039     -0.7196193 0.18126051 -3.970083 7.184753e-05
-Bglap3     5.684059      1.6423075 0.39437976  4.164279 3.123375e-05
-Ccnd1    382.761220     -0.2589384 0.05792885 -4.469939 7.824178e-06
-Cd59a     43.586903     -0.5620998 0.13247184 -4.243164 2.203902e-05
-Cds1    1077.986482     -0.1506700 0.03075959 -4.898309 9.666477e-07
-Clec18a   28.120248     -0.6465664 0.14437743 -4.478307 7.523737e-06
-               padj    gene
-Adora2a 0.045900305 Adora2a
-Bglap3  0.022348375  Bglap3
-Ccnd1   0.007775494   Ccnd1
-Cd59a   0.017140606   Cd59a
-Cds1    0.001235100    Cds1
-Clec18a 0.007775494 Clec18a</code></pre>
+<pre><code>        baseMean log2FoldChange      lfcSE      stat        pvalue
+Ccnd1  456.23074     -0.2656769 0.05700678 -4.660444  3.155285e-06
+Cd59a   49.00134     -0.5503241 0.13432821 -4.096862  4.187889e-05
+Cds1  1323.97433     -0.1292610 0.03182413 -4.061729  4.871067e-05
+Cpsf1  335.56918     -0.2311975 0.05465967 -4.229763  2.339376e-05
+Ddx3x 1071.03399     -0.3599223 0.03653105 -9.852503  6.685792e-23
+Ddx3y  267.14525      8.4680416 0.36393367 23.268091 9.332276e-120
+               padj  gene
+Ccnd1  3.695986e-03 Ccnd1
+Cd59a  2.997831e-02 Cd59a
+Cds1   3.229800e-02  Cds1
+Cpsf1  1.773109e-02 Cpsf1
+Ddx3x  1.435774e-19 Ddx3x
+Ddx3y 1.202464e-115 Ddx3y</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -567,20 +567,20 @@ Clec18a 0.007775494 Clec18a</code></pre>
 <span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(sig_sex_annot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>     baseMean log2FoldChange      lfcSE      stat       pvalue        padj
-1   18.228039     -0.7196193 0.18126051 -3.970083 7.184753e-05 0.045900305
-2    5.684059      1.6423075 0.39437976  4.164279 3.123375e-05 0.022348375
-3  382.761220     -0.2589384 0.05792885 -4.469939 7.824178e-06 0.007775494
-4   43.586903     -0.5620998 0.13247184 -4.243164 2.203902e-05 0.017140606
-5 1077.986482     -0.1506700 0.03075959 -4.898309 9.666477e-07 0.001235100
-6   28.120248     -0.6465664 0.14437743 -4.478307 7.523737e-06 0.007775494
-     gene                                 GENENAME
-1 Adora2a                   adenosine A2a receptor
-2  Bglap3    bone gamma-carboxyglutamate protein 3
-3   Ccnd1                                cyclin D1
-4   Cd59a                            CD59a antigen
-5    Cds1            CDP-diacylglycerol synthase 1
-6 Clec18a C-type lectin domain family 18, member A</code></pre>
+<pre><code>    baseMean log2FoldChange      lfcSE      stat        pvalue          padj
+1  456.23074     -0.2656769 0.05700678 -4.660444  3.155285e-06  3.695986e-03
+2   49.00134     -0.5503241 0.13432821 -4.096862  4.187889e-05  2.997831e-02
+3 1323.97433     -0.1292610 0.03182413 -4.061729  4.871067e-05  3.229800e-02
+4  335.56918     -0.2311975 0.05465967 -4.229763  2.339376e-05  1.773109e-02
+5 1071.03399     -0.3599223 0.03653105 -9.852503  6.685792e-23  1.435774e-19
+6  267.14525      8.4680416 0.36393367 23.268091 9.332276e-120 1.202464e-115
+   gene                                       GENENAME
+1 Ccnd1                                      cyclin D1
+2 Cd59a                                  CD59a antigen
+3  Cds1                  CDP-diacylglycerol synthase 1
+4 Cpsf1 cleavage and polyadenylation specific factor 1
+5 Ddx3x                  DEAD box helicase 3, X-linked
+6 Ddx3y                  DEAD box helicase 3, Y-linked</code></pre>
 </div>
 </div>
 <p>In the PC1 we observed a big variance in gene counts by gender. In the DESeq2 analysis we only observe very few genes that get a significant p-value. This could possibly be because a variety of small but wide-spread physiological changes in the mice can be observed by sex that also affect gene expression. But when adjusting p-value and FDR in DESeq2 these get filtered as noise rather than actual biological signal. It then also makes sense that the significant sex-DE genes are not known sex-specific markers.</p>
