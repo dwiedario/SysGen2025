@@ -19,7 +19,7 @@ We use bulk cell data from the motor cortex of 22 mice (10 female, 11 male) aged
 ```{r}
 library(data.table)
 
-counts_file  <- "systems_genomics/counts_from_seqmonk_all_genes.tsv"
+counts_file  <- "systems_genomics/gene_counts.tsv"
 meta_file    <- "systems_genomics/metadata_PRJNA875066_SRRsubset.tsv"
 
 counts <- fread(counts_file)
