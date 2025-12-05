@@ -1,0 +1,282 @@
+---
+title: "figure_reproduction"
+format: html
+editor: visual
+---
+
+## Load data
+
+load saved results
+
+```{r}
+#| include: false
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+suppressPackageStartupMessages(library(DESeq2))
+suppressPackageStartupMessages(library(dplyr)) # Good practice for data manipulation
+
+library(data.table)
+# Define the directory where you saved the results
+results_dir <- "results"
+
+# Load the stored objects
+dds        <- readRDS(file.path(results_dir, "dds_sex_age.rds"))
+vsd        <- readRDS(file.path(results_dir, "vsd_sex_age.rds"))
+res_age_df <- readRDS(file.path(results_dir, "res_age_df.rds"))
+sig_age    <- readRDS(file.path(results_dir, "sig_age_df.rds"))
+
+
+
+counts_file  <- "systems_genomics/counts_from_seqmonk_all_genes.tsv"
+meta_file    <- "systems_genomics/metadata_PRJNA875066_SRRsubset.tsv"
+
+counts <- fread(counts_file)
+meta   <- fread(meta_file)
+
+head(counts)
+head(meta)
+```
+
+## Reproduce Change of DEGs over time plot (1F)
+
+1.  Define Age Bins and reference
+
+```{r}
+library(DESeq2)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+# Ensure you have the necessary components loaded (as established in the previous step)
+vsd_mat      <- assay(vsd)
+metadata_clean <- as.data.frame(colData(dds))
+counts_mat <- counts(dds, normalized = FALSE)
+
+# 1. Define Age Groups based on a 3-month baseline
+# We will group samples into small bins centered near the target ages (e.g., 2-month wide windows)
+metadata_clean <- metadata_clean %>%
+  mutate(age_group_ref = case_when(
+    # Reference Group (3 months)
+    age_month <= 5 ~ "03_Reference", 
+    # Target Age Bins (12, 15, 18, 21, 26, 28)
+    age_month >= 11 & age_month <= 13 ~ "12_Months",
+    age_month >= 14 & age_month <= 16 ~ "15_Months",
+    age_month >= 17 & age_month <= 19 ~ "18_Months",
+    age_month >= 20 & age_month <= 23 ~ "21_Months",
+    age_month >= 25 & age_month <= 27 ~ "26_Months",
+    age_month >= 28 ~ "28_Months",
+    TRUE ~ NA_character_ # Assign remaining samples to NA if they fall outside the bins
+  )) %>%
+  # Filter out samples that did not fall into a defined bin
+  filter(!is.na(age_group_ref))
+
+# Ensure age_group_ref is a factor with '03_Reference' as the baseline
+metadata_clean$age_group_ref <- factor(metadata_clean$age_group_ref,
+                                   levels = c("03_Reference", "12_Months", "15_Months", 
+                                              "18_Months", "21_Months", "26_Months", "28_Months"))
+
+# Re-initialize DESeqDataSet with the new factor design and filtered metadata
+dds_age_points <- DESeqDataSetFromMatrix(
+  countData = round(counts_mat[, rownames(metadata_clean)]), # Subset counts to filtered samples
+  colData   = metadata_clean,
+  design    = ~ sex + age_group_ref
+)
+
+# Filter low expressed genes
+keep_points <- rowSums(counts(dds_age_points)) >= 10
+dds_age_points <- dds_age_points[keep_points, ]
+
+# Fit the new model
+dds_age_points <- DESeq(dds_age_points)
+```
+
+2.  Perform Pairwise Comparisons and Count DEGs
+
+```{r}
+# Define the target ages for the x-axis
+target_ages <- c(12, 15, 18, 21, 26, 28)
+n_degs_list <- list()
+
+# Reference level name
+ref_level <- "03_Reference"
+
+print("--- All Available DESeq2 Result Names ---")
+print(resultsNames(dds_age_points))
+print("-----------------------------------------")
+
+for (age in target_ages) {
+  # Construct the name of the comparison level (e.g., "12_Months")
+  comp_level <- paste0(age, "_Months")
+  
+    
+  # Extract results for the comparison vs. the reference (e.g., 12_Months vs 03_Reference)
+  res_comp <- results(dds_age_points, contrast = c("age_group_ref", comp_level, ref_level))
+  
+  # Count significant DEGs
+  n_sig <- sum(res_comp$padj < 0.05, na.rm = TRUE)
+  
+  # Store the result
+  n_degs_list[[as.character(age)]] <- n_sig
+
+}
+
+# Create Trajectory Data Frame
+trajectory_df_points <- data.frame(
+  age_month = as.numeric(names(n_degs_list)),
+  n_degs = unlist(n_degs_list)
+)
+
+print(trajectory_df_points)
+```
+
+3.  Plot the Detailed Trajectory
+
+```{r}
+# Define limits of plot
+max_degs <- max(trajectory_df_points$n_degs, na.rm = TRUE)
+y_max_limit <- max_degs * 1.15 
+y_min_limit <- 0
+
+# Plot: Detailed Trajectory of DEGs vs. Age
+ggplot(trajectory_df_points, aes(x = age_month, y = n_degs)) +
+  geom_point(size = 4, color = "darkgreen") +
+  geom_line(color = "darkgreen", linewidth = 0.8) +
+  geom_text(aes(label = n_degs), vjust = -1.2, size = 4) +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Age Trajectory of DEGs (Relative to 3-month Baseline)",
+    x = "Age (months)",
+    y = "Number of Significant DEGs (padj < 0.05)"
+  ) +
+  # Use scale_x_continuous to ensure all requested points are marked on the axis
+  scale_x_continuous(breaks = target_ages) +
+  scale_y_continuous(limits = c(y_min_limit, y_max_limit))
+
+  ggsave("trajectory_plot.png", plot = last_plot(), width = 8, height = 6, dpi = 300)
+```
+
+## Reproduce Up/Down regulation of selected CAS genes (2B)
+
+1.  extract log2-FC values for each gene at different time points
+
+```{r}
+library(DESeq2)
+library(pheatmap)
+library(dplyr)
+library(ggplot2) # Necessary for pheatmap dependencies
+
+CAS_genes  <- fread("genes_fig2B.tsv")
+gene_names <- CAS_genes$Gene
+
+
+# --- ASSUMPTIONS: ---
+# 1. dds_age_points is the DESeq2 object with the design ~ sex + age_group_ref.
+# 2. gene_names vector (containing the genes to plot) is defined in your environment.
+# 3. target_ages vector (e.g., c(12, 15, 18, 21, 26, 28)) is available.
+# --------------------
+
+# Define the reference level
+ref_level <- "03_Reference"
+
+# 1. Extract and Compile Log2FC Values
+
+# Initialize an empty list to store LFC results for each timepoint
+lfc_list <- list()
+
+for (age in target_ages) {
+  # Construct the comparison level name (e.g., "12_Months")
+  comp_level <- paste0(age, "_Months")
+      
+    # Extract results using the contrast argument (vs. 03_Reference)
+    # The 'results' object is implicitly created for each loop iteration
+    res_comp <- results(dds_age_points, contrast = c("age_group_ref", comp_level, ref_level))
+    
+    # Convert to data frame, filter for the specified gene_names, and extract LFC
+    lfc_df <- as.data.frame(res_comp) %>%
+      dplyr::filter(rownames(.) %in% gene_names) %>%
+      dplyr::select(log2FoldChange)
+    
+    # Ensure genes are in the same order as gene_names before storing
+    lfc_df <- lfc_df[match(gene_names, rownames(lfc_df)), , drop = FALSE]
+    
+    # Store the LFC vector, naming the column by age
+    lfc_list[[as.character(age)]] <- lfc_df$log2FoldChange
+    
+}
+
+# Combine all LFC vectors into a single matrix
+lfc_matrix <- do.call(cbind, lfc_list)
+rownames(lfc_matrix) <- gene_names
+colnames(lfc_matrix) <- paste(target_ages, "Months")
+
+# Imputing NA values
+if (any(is.na(lfc_matrix))) {
+  print(paste("Warning: Imputing", sum(is.na(lfc_matrix)), "NA/NaN values to 0 in LFC matrix."))
+  lfc_matrix[is.na(lfc_matrix)] <- 0
+}
+```
+
+2.  Create Heatmap
+
+```{r}
+# 2. Generate the Heatmap
+filename_output <- "LFC_Trajectory_Heatmap.pdf"
+
+  max_down <- -1.5
+  max_up <- 3.0
+    
+  # Define the number of colors in the color palette (must match the number of breaks)
+  num_colors <- 100 
+    
+  # 1. Create the color palette: Blue (down) -> White (zero) -> Red (up)
+  heatmap_colors <- colorRampPalette(c("blue", "white", "red"))(num_colors)
+    
+    # 2. Define the breaks for the color mapping
+    # We need breaks that span the asymmetric range [-1.5, 3.0]
+    # We will create two segments: one from min to 0, and one from 0 to max.
+    custom_breaks <- c(
+        seq(max_down, 0, length.out = floor(num_colors / 2) + 1), # Segment 1: Blue to White (includes 0)
+        seq(0 + (max_up / floor(num_colors / 2)), max_up, length.out = floor(num_colors / 2)) # Segment 2: White to Red
+    )
+    # Ensure no duplicates at zero and the length is correct (might need minor adjustment based on num_colors)
+    custom_breaks <- unique(custom_breaks)
+    
+    
+    pheatmap(
+      lfc_matrix,
+      scale = "none",
+      clustering_method = "complete",
+      clustering_distance_rows = "euclidean",
+      clustering_distance_cols = "euclidean",
+      show_rownames = TRUE,
+      show_colnames = TRUE,
+      cluster_cols = FALSE, 
+      main = "Gene Trajectory: Log2FC vs. 3-Month Baseline (Asymmetric Scale)",
+      
+     
+      color = heatmap_colors,
+      breaks = custom_breaks,
+      
+      
+      fontsize_row = 8,
+      fontsize_col = 10,
+      # Define the labels clearly based on the custom range
+      legend_breaks = c(max_down, 0, max_up),
+      legend_labels = c(paste0("Down (≤", max_down, ")"), "No Change", paste0("Up (≥", max_up, ")")),
+      
+      #Take out following 3 lines of codes to get original Heatmap
+      filename = filename_output,
+      width = 8,  # Width in inches
+      height = 10 # Height in inches
+  )
+
+
+filename_output <- "LFC_Trajectory_Heatmap.pdf"
+
+pheatmap(
+  lfc_matrix,
+  # ... rest of your pheatmap code ...
+  
+  # --- ADD THESE ARGUMENTS ---
+  
+)
+```
