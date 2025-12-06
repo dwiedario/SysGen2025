@@ -255,6 +255,24 @@ pheatmap(
 ## Are DE genes in age sex specific?
 
 ```{r}
+# Interaction design: sex-specific aging effects
+design(dds) <- ~ sex + age_c + sex:age_c
+
+dds_int <- DESeq(dds)
+
+# Extract interaction term:
+# This tests whether the slope of age differs between males and females
+res_interaction <- results(dds_int, name = "sexMale.age_c")
+
+summary(res_interaction)
+
+# Turn into a dataframe
+res_int_df <- as.data.frame(res_interaction)
+res_int_df$gene <- rownames(res_int_df)
+
+# Significant interaction genes
+sig_int <- subset(res_int_df, padj < 0.05)
+head(sig_int)
 
 ```
 
