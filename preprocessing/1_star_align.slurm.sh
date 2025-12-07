@@ -3,7 +3,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem-per-cpu=5G
-#SBATCH --time=08:00:00
+#SBATCH --time=04:00:00
 #SBATCH --array=0-21
 #SBATCH --output=log_star_align/star_%A_%a.log
 
@@ -28,6 +28,9 @@ STAR \
   --runThreadN "${SLURM_CPUS_PER_TASK}" \
   --genomeDir "${GENOME_DIR}" \
   --readFilesIn "${R1}" "${R2}" \
-  --outFileNamePrefix "${OUT_PREFIX}"
+  --outFileNamePrefix "${OUT_PREFIX}" \
+  --outFilterMultimapNmax 1 \
+  --quantMode TranscriptomeSAM \
+  --outSAMtype BAM SortedByCoordinate
 
 echo "Alignment done"

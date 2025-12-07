@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=star_index_mm10
+#SBATCH --job-name=star_index_GRCm39
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem-per-cpu=6G
@@ -9,8 +9,8 @@
 source ~/.bashrc
 conda activate rnaseq
 
-GENOME_FASTA=/cluster/scratch/tkitak/ref/Mus_musculus.GRCm38.dna.primary_assembly.fa
-GTF_FILE=/cluster/scratch/tkitak/ref/Mus_musculus.GRCm38.102.gtf
+GENOME_FASTA=/cluster/scratch/tkitak/ref/Mus_musculus.GRCm39.dna.primary_assembly.fa
+GTF_FILE=/cluster/scratch/tkitak/ref/Mus_musculus.GRCm39.113.gtf
 INDEX_DIR=/cluster/scratch/tkitak/star_index
 
 mkdir -p "${INDEX_DIR}"
@@ -21,6 +21,6 @@ STAR \
   --genomeDir "${INDEX_DIR}" \
   --genomeFastaFiles "${GENOME_FASTA}" \
   --sjdbGTFfile "${GTF_FILE}" \
-  --sjdbOverhang 99
+  --sjdbOverhang 149
 
 echo "STAR index build complete"

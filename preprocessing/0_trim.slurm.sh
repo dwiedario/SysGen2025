@@ -7,8 +7,9 @@
 #SBATCH --array=0-21
 #SBATCH --output=/cluster/scratch/tkitak/log/trim_%A_%a.log
 
+# Activate conda
 source ~/.bashrc
-conda activate rnaseq
+conda activate rnaseq    # change name if your env is different
 
 FASTQ_DIR=/cluster/scratch/tkitak/brain_aging_rnaseq/fastq
 TRIM_DIR=/cluster/scratch/tkitak/brain_aging_rnaseq/trimmed
