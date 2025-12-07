@@ -182,7 +182,7 @@ ego_up_simpl <- simplify(
 dotplot(ego_up_simpl, showCategory = 15, title = "GO BP – up with age (simplified)", label_format = 60)
 
 ```
-
+Many of the associated BP correspond to upregulated immune processes and increased inflammation with age.
 
 ```{r}
 #| fig-width: 14
@@ -196,6 +196,110 @@ ego_down_simpl <- simplify(
 
 dotplot(ego_down_simpl, showCategory = 15, title = "GO BP – down with age (simplified)", label_format = 60)
 ```
+Many of the downregulated BP terms correspond to decreased metabolic and biosynthetic processes with age which makes sense if we think of it as a decrease in neuro plasticity with age.
+
+```{r}
+fc_vec <- res_age_df$log2FoldChange
+names(fc_vec) <- res_age_df$gene
+
+```
+
+```{r}
+#| fig-width: 14
+
+cnetplot(
+  ego_up_simpl,
+  showCategory = 8,
+  foldChange  = fc_vec,
+  circular    = FALSE,
+  colorEdge   = TRUE
+)
+
+```
+```{r}
+#| fig-width: 14
+
+cnetplot(
+  ego_down_simpl,
+  showCategory = 8,
+  foldChange  = fc_vec,
+  circular    = FALSE,
+  colorEdge   = TRUE
+)
+```
+
+```{r}
+#| fig-width: 14
+
+# Top 10 most significant GO Terms for our Genes up with age
+
+heatplot(
+  ego_up_simpl,
+  foldChange  = fc_vec,
+  showCategory = 10
+)
+
+```
+```{r}
+#| fig-width: 14
+
+heatplot(
+  ego_down_simpl,
+  foldChange  = fc_vec,
+  showCategory = 10
+)
+
+```
+
+
+The heatmaps and netplot allow us to identify hub genes that bridge multiple GO BP terms. These hub genes may be key drivers of the age-related changes we observe.
+We observe the Camp Gene which is involved in immune response and inflammation against microbial and viral infections. It links the humoral immune response to carboxylic acid biosynthetic processes and cell killing. One could hypothesise that it leads to increased inflammation by a mechanism associated with carboxylic acid biosynthesis. Furthermore we also observe a strong link between cell killing and T cell mediated cytotoxicity and similar processes, indicating that T cells may play a key role in age-related inflammation and cell death in the motor cortex.
+The down regulated processes are quite densily connected, with many genes linking multiple processes, related to synapse structure, organization and activity. This indicates that multiple genes may be involved in the age-related decline in synaptic function and plasticity and it seems to be a complex change on a system level rather than single key driver genes.
+
+```{r}
+ego_up_df <- as.data.frame(ego_up_simpl)
+
+ego_up_genes_long <- ego_up_df %>%
+  dplyr::select(ID, Description, p.adjust, geneID) %>%
+  tidyr::separate_rows(geneID, sep = "/") %>%
+  dplyr::rename(SYMBOL = geneID)
+  
+ego_up_genes_long
+
+```
+
+```{r}
+ego_up_genes_annot <- ego_up_genes_long %>%
+  left_join(
+    res_age_df %>%
+      dplyr::select(gene, log2FoldChange, padj),
+    by = c("SYMBOL" = "gene")
+  )
+
+ego_up_genes_annot
+
+```
+```{r}
+top_driver_genes <- ego_up_genes_annot %>%
+  arrange(p.adjust, desc(abs(log2FoldChange)))
+
+head(top_driver_genes, 30)
+
+```
+
+```{r}
+# Sample code to extract genes of specific GO BP
+ego_up_genes_annot %>%
+  filter(Description == "carboxylic acid biosynthetic process") %>%
+  arrange(padj) %>%
+  head(20)
+
+ego_up_simpl@result %>%
+  filter(Description == "carboxylic acid biosynthetic process") %>%
+  pull(geneID)
+
+```
+
 
 ## GO CC & MF Analysis
 
@@ -344,14 +448,6 @@ label_format = 60)
 ```
 
 
-
-
-
-
-
-
-
-
 # KEGG Enrichment Analysis
 
 ```{r}
@@ -466,9 +562,6 @@ saveRDS(ego_mf_up_simpl,  "results/go_mf_age_up_simpl.rds")
 saveRDS(ego_mf_down_simpl,"results/go_mf_age_down_simpl.rds")
 
 ```
-
-
-
 ## Ideas / ToDo
 
 ```{r}

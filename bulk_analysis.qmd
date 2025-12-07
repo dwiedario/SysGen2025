@@ -113,14 +113,24 @@ ggplot(pca_df, aes(PC1, PC2, color = age_month, shape = sex)) +
 ```
 
 ```{r}
-sampleDists <- dist(t(vsd_mat))
-sampleDistMatrix <- as.matrix(sampleDists)
+sampleDists       <- dist(t(vsd_mat))
+sampleDistMatrix  <- as.matrix(sampleDists)
+
+## build labels
+meta_df <- as.data.frame(metadata_clean)
+rownames(meta_df) <- meta_df$SRR                   # key by SRR
+
+sample_info <- meta_df[colnames(vsd_mat), ]        # same order as samples
+new_labels  <- paste0(sample_info$age_month, "m_", sample_info$sex)
+
+# overwrite row/column names with the new labels
+rownames(sampleDistMatrix) <- new_labels
+colnames(sampleDistMatrix) <- new_labels
 
 pheatmap(sampleDistMatrix,
          clustering_distance_rows = sampleDists,
          clustering_distance_cols = sampleDists,
          main = "Sample distances (vst)")
-
 ```
 
 ```{r}
@@ -245,6 +255,24 @@ pheatmap(
 ## Are DE genes in age sex specific?
 
 ```{r}
+# Interaction design: sex-specific aging effects
+design(dds) <- ~ sex + age_c + sex:age_c
+
+dds_int <- DESeq(dds)
+
+# Extract interaction term:
+# This tests whether the slope of age differs between males and females
+res_interaction <- results(dds_int, name = "sexMale.age_c")
+
+summary(res_interaction)
+
+# Turn into a dataframe
+res_int_df <- as.data.frame(res_interaction)
+res_int_df$gene <- rownames(res_int_df)
+
+# Significant interaction genes
+sig_int <- subset(res_int_df, padj < 0.05)
+head(sig_int)
 
 ```
 

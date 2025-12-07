@@ -1,0 +1,577 @@
+---
+title: "Bulk Analysis – GO & KEGG for Age-DE Genes"
+format: html
+editor: visual
+---
+
+```{r}
+#| include: false
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+
+suppressPackageStartupMessages({
+  library(DESeq2)
+  library(clusterProfiler)
+  library(org.Mm.eg.db)
+  library(dplyr)
+  library(enrichplot)
+  library(ReactomePA)
+})
+
+```
+## Load Data & Prepare gene list for GO & KEGG analysis
+
+
+```{r}
+dds        <- readRDS("results/dds_sex_age.rds")
+vsd        <- readRDS("results/vsd_sex_age.rds")
+res_age_df <- readRDS("results/res_age_df.rds")
+sig_age    <- readRDS("results/sig_age_df.rds")
+
+head(sig_age)
+
+```
+
+
+```{r}
+id_type <- ifelse(grepl("^ENS", res_age_df$gene[1]), "ENSEMBL", "SYMBOL")
+id_type
+
+# Universe = all tested genes with a padj (background)
+gene_universe <- res_age_df$gene[!is.na(res_age_df$padj)]
+
+# Significant age-DE genes
+sig_age_all   <- sig_age$gene
+sig_age_up    <- sig_age$gene[sig_age$padj < 0.05 & sig_age$log2FoldChange > 0]
+sig_age_down  <- sig_age$gene[sig_age$padj < 0.05 & sig_age$log2FoldChange < 0]
+
+length(gene_universe); length(sig_age_up); length(sig_age_down)
+
+
+```
+
+```{r}
+# Convert IDs to Entrez
+# Note: enrichGO() works fine with SYMBOLs and converts back to SYMBOL anyway so this is slightly redundant if we're correct... but KEGG needs Entrez 
+
+universe_entrez <- bitr(gene_universe,
+fromType = id_type,
+toType   = "ENTREZID",
+OrgDb    = org.Mm.eg.db) %>%
+distinct(ENTREZID)
+
+sig_up_entrez <- bitr(sig_age_up,
+fromType = id_type,
+toType   = "ENTREZID",
+OrgDb    = org.Mm.eg.db) %>%
+distinct(ENTREZID)
+
+sig_down_entrez <- bitr(sig_age_down,
+fromType = id_type,
+toType   = "ENTREZID",
+OrgDb    = org.Mm.eg.db) %>%
+distinct(ENTREZID)
+
+nrow(universe_entrez); nrow(sig_up_entrez); nrow(sig_down_entrez)
+
+```
+
+```{r}
+mapped <- bitr(gene_universe,
+               fromType = id_type,
+               toType   = "ENTREZID",
+               OrgDb    = org.Mm.eg.db)
+
+failed <- setdiff(gene_universe, mapped[[id_type]])
+head(failed)
+
+```
+
+```{r}
+
+rescue_alias <- AnnotationDbi::select(
+  org.Mm.eg.db,
+  keys    = failed,
+  keytype = "ALIAS",
+  columns = "ENTREZID"
+)
+
+
+rescue_alias <- rescue_alias %>% filter(!is.na(ENTREZID))
+```
+
+```{r}
+
+# merge rescued mappings
+
+# add tto all genes list
+universe_entrez <- sort(unique(c(universe_entrez$ENTREZID, rescue_alias$ENTREZID)))
+
+## Add rescued Entrez IDs to sig_up / sig_down, if their input_id is in those sets
+
+# rescued genes that are in sig_age_up / sig_age_down
+rescue_up_entrez <- rescue_alias$ENTREZID[rescue_alias$input_id %in% sig_age_up]
+rescue_down_entrez <- rescue_alias$ENTREZID[rescue_alias$input_id %in% sig_age_down]
+
+# extend the existing Entrez vectors
+sig_up_entrez <- sort(unique(c(sig_up_entrez$ENTREZID, rescue_up_entrez)))
+sig_down_entrez <- sort(unique(c(sig_down_entrez$ENTREZID, rescue_down_entrez)))
+
+## Quick sanity checks
+length(universe_entrez); length(sig_up_entrez); length(sig_down_entrez)
+
+
+```
+
+
+## GO Enrichment Analysis
+
+```{r}
+ego_up <- enrichGO(
+gene          = sig_up_entrez,
+universe      = universe_entrez,
+OrgDb         = org.Mm.eg.db,
+keyType       = "ENTREZID",
+ont           = "BP",
+pAdjustMethod = "BH",
+qvalueCutoff  = 0.05,
+readable      = TRUE
+)
+
+ego_down <- enrichGO(
+gene          = sig_down_entrez,
+universe      = universe_entrez,
+OrgDb         = org.Mm.eg.db,
+keyType       = "ENTREZID",
+ont           = "BP",
+pAdjustMethod = "BH",
+qvalueCutoff  = 0.05,
+readable      = TRUE
+)
+
+#head(ego_up)
+#head(ego_down)
+
+```
+
+
+```{r}
+#| fig-width: 14
+
+dotplot(ego_up, showCategory = 15, title = "GO BP – Genes up with age", label_format = 60)
+
+```
+
+```{r}
+#| fig-width: 14
+
+dotplot(ego_down, showCategory = 15, title = "GO BP – Genes down with age", label_format = 60)
+
+```
+
+
+```{r}
+#| fig-width: 14
+#| 
+ego_up_simpl <- simplify(
+  ego_up,
+  cutoff = 0.7,          
+  by     = "p.adjust",
+  select_fun = min
+)
+
+dotplot(ego_up_simpl, showCategory = 15, title = "GO BP – up with age (simplified)", label_format = 60)
+
+```
+Many of the associated BP correspond to upregulated immune processes and increased inflammation with age.
+
+```{r}
+#| fig-width: 14
+#| 
+ego_down_simpl <- simplify(
+  ego_down,
+  cutoff = 0.7,          
+  by     = "p.adjust",
+  select_fun = min
+)
+
+dotplot(ego_down_simpl, showCategory = 15, title = "GO BP – down with age (simplified)", label_format = 60)
+```
+Many of the downregulated BP terms correspond to decreased metabolic and biosynthetic processes with age which makes sense if we think of it as a decrease in neuro plasticity with age.
+
+```{r}
+fc_vec <- res_age_df$log2FoldChange
+names(fc_vec) <- res_age_df$gene
+
+```
+
+```{r}
+#| fig-width: 14
+
+cnetplot(
+  ego_up_simpl,
+  showCategory = 8,
+  foldChange  = fc_vec,
+  circular    = FALSE,
+  colorEdge   = TRUE
+)
+
+```
+```{r}
+#| fig-width: 14
+
+cnetplot(
+  ego_down_simpl,
+  showCategory = 8,
+  foldChange  = fc_vec,
+  circular    = FALSE,
+  colorEdge   = TRUE
+)
+```
+
+```{r}
+#| fig-width: 14
+
+# Top 10 most significant GO Terms for our Genes up with age
+
+heatplot(
+  ego_up_simpl,
+  foldChange  = fc_vec,
+  showCategory = 10
+)
+
+```
+```{r}
+#| fig-width: 14
+
+heatplot(
+  ego_down_simpl,
+  foldChange  = fc_vec,
+  showCategory = 10
+)
+
+```
+
+
+The heatmaps and netplot allow us to identify hub genes that bridge multiple GO BP terms. These hub genes may be key drivers of the age-related changes we observe.
+We observe the Camp Gene which is involved in immune response and inflammation against microbial and viral infections. It links the humoral immune response to carboxylic acid biosynthetic processes and cell killing. One could hypothesise that it leads to increased inflammation by a mechanism associated with carboxylic acid biosynthesis. Furthermore we also observe a strong link between cell killing and T cell mediated cytotoxicity and similar processes, indicating that T cells may play a key role in age-related inflammation and cell death in the motor cortex.
+The down regulated processes are quite densily connected, with many genes linking multiple processes, related to synapse structure, organization and activity. This indicates that multiple genes may be involved in the age-related decline in synaptic function and plasticity and it seems to be a complex change on a system level rather than single key driver genes.
+
+```{r}
+ego_up_df <- as.data.frame(ego_up_simpl)
+
+ego_up_genes_long <- ego_up_df %>%
+  dplyr::select(ID, Description, p.adjust, geneID) %>%
+  tidyr::separate_rows(geneID, sep = "/") %>%
+  dplyr::rename(SYMBOL = geneID)
+  
+ego_up_genes_long
+
+```
+
+```{r}
+ego_up_genes_annot <- ego_up_genes_long %>%
+  left_join(
+    res_age_df %>%
+      dplyr::select(gene, log2FoldChange, padj),
+    by = c("SYMBOL" = "gene")
+  )
+
+ego_up_genes_annot
+
+```
+```{r}
+top_driver_genes <- ego_up_genes_annot %>%
+  arrange(p.adjust, desc(abs(log2FoldChange)))
+
+head(top_driver_genes, 30)
+
+```
+
+```{r}
+# Sample code to extract genes of specific GO BP
+ego_up_genes_annot %>%
+  filter(Description == "carboxylic acid biosynthetic process") %>%
+  arrange(padj) %>%
+  head(20)
+
+ego_up_simpl@result %>%
+  filter(Description == "carboxylic acid biosynthetic process") %>%
+  pull(geneID)
+
+```
+
+
+## GO CC & MF Analysis
+
+```{r}
+
+ego_cc_up <- enrichGO(
+gene          = sig_up_entrez,
+universe      = universe_entrez,
+OrgDb         = org.Mm.eg.db,
+keyType       = "ENTREZID",
+ont           = "CC",
+pAdjustMethod = "BH",
+qvalueCutoff  = 0.05,
+readable      = TRUE
+)
+
+ego_cc_down <- enrichGO(
+gene          = sig_down_entrez,
+universe      = universe_entrez,
+OrgDb         = org.Mm.eg.db,
+keyType       = "ENTREZID",
+ont           = "CC",
+pAdjustMethod = "BH",
+qvalueCutoff  = 0.05,
+readable      = TRUE
+)
+
+ego_mf_up <- enrichGO(
+gene          = sig_up_entrez,
+universe      = universe_entrez,
+OrgDb         = org.Mm.eg.db,
+keyType       = "ENTREZID",
+ont           = "MF",
+pAdjustMethod = "BH",
+qvalueCutoff  = 0.05,
+readable      = TRUE
+)
+
+ego_mf_down <- enrichGO(
+gene          = sig_down_entrez,
+universe      = universe_entrez,
+OrgDb         = org.Mm.eg.db,
+keyType       = "ENTREZID",
+ont           = "MF",
+pAdjustMethod = "BH",
+qvalueCutoff  = 0.05,
+readable      = TRUE
+)
+
+
+# head(ego_cc_up); head(ego_cc_down)
+
+# head(ego_mf_up); head(ego_mf_down)
+
+```
+
+
+```{r}
+#| fig-width: 14
+
+dotplot(ego_cc_up, showCategory = 15, title = "GO CC – Genes up with age", label_format = 60)
+```
+
+```{r}
+#| fig-width: 14
+
+dotplot(ego_cc_down, showCategory = 15, title = "GO CC – Genes down with age", label_format = 60)
+```
+
+```{r}
+#| fig-width: 14
+
+dotplot(ego_mf_up, showCategory = 15, title = "GO MF – Genes up with age", label_format = 60)
+```
+
+```{r}
+#| fig-width: 14
+
+dotplot(ego_mf_down, showCategory = 15, title = "GO MF – Genes down with age", label_format = 60)
+```
+
+## GO CC and MF simplified
+
+```{r}
+#| fig-width: 14
+
+ego_cc_up_simpl <- simplify(
+ego_cc_up,
+cutoff     = 0.7,
+by         = "p.adjust",
+select_fun = min
+)
+
+dotplot(ego_cc_up_simpl, showCategory = 15,
+title = "GO CC – up with age (simplified)",
+label_format = 60)
+
+```
+
+```{r}
+#| fig-width: 14
+
+ego_cc_down_simpl <- simplify(
+ego_cc_down,
+cutoff     = 0.7,
+by         = "p.adjust",
+select_fun = min
+)
+
+dotplot(ego_cc_down_simpl, showCategory = 15,
+title = "GO CC – down with age (simplified)",
+label_format = 60)
+
+```
+
+```{r}
+#| fig-width: 14
+
+ego_mf_up_simpl <- simplify(
+ego_mf_up,
+cutoff     = 0.7,
+by         = "p.adjust",
+select_fun = min
+)
+
+dotplot(ego_mf_up_simpl, showCategory = 15,
+title = "GO MF – up with age (simplified)",
+label_format = 60)
+
+```
+
+```{r}
+#| fig-width: 14
+
+ego_mf_down_simpl <- simplify(
+ego_mf_down,
+cutoff     = 0.7,
+by         = "p.adjust",
+select_fun = min
+)
+
+dotplot(ego_mf_down_simpl, showCategory = 15,
+title = "GO MF – down with age (simplified)",
+label_format = 60)
+
+```
+
+
+# KEGG Enrichment Analysis
+
+```{r}
+ekegg_up <- enrichKEGG(
+gene          = sig_up_entrez,
+universe      = universe_entrez,
+organism      = "mmu",
+pAdjustMethod = "BH",
+qvalueCutoff  = 0.05
+)
+
+ekegg_down <- enrichKEGG(
+gene          = sig_down_entrez,
+universe      = universe_entrez,
+organism      = "mmu",
+pAdjustMethod = "BH",
+qvalueCutoff  = 0.05
+)
+
+#head(ekegg_up)
+#head(ekegg_down)
+
+
+
+```
+```{r}
+#| fig-width: 14
+
+dotplot(ekegg_up, showCategory = 15, title = "KEGG – Genes up with age")
+
+```
+
+```{r}
+#| fig-width: 14
+
+dotplot(ekegg_down, showCategory = 15, title = "KEGG – Genes down with age")
+
+```
+
+## ReactomePA Analysis
+
+```{r}
+reactome_up <- enrichPathway(
+  gene          = sig_up_entrez,
+  universe      = universe_entrez,
+  organism      = "mouse",
+  pAdjustMethod = "BH",
+  qvalueCutoff  = 0.05,
+  readable      = TRUE
+)
+
+reactome_down <- enrichPathway(
+  gene          = sig_down_entrez,
+  universe      = universe_entrez,
+  organism      = "mouse",
+  pAdjustMethod = "BH",
+  qvalueCutoff  = 0.05,
+  readable      = TRUE
+)
+
+# head(reactome_up)
+# head(reactome_down)
+
+
+```
+
+```{r}
+#| fig-width: 14
+
+dotplot(reactome_up, showCategory = 15, title = "Reactome – Genes up with age", label_format = 60)
+```
+
+```{r}
+#| fig-width: 14
+
+dotplot(reactome_down, showCategory = 15, title = "Reactome – Genes down with age", label_format = 60)
+```
+
+
+
+
+
+## Save results
+
+```{r}
+## Save results
+
+saveRDS(ego_up,           "results/go_bp_age_up.rds")
+saveRDS(ego_down,         "results/go_bp_age_down.rds")
+saveRDS(ekegg_up,         "results/kegg_age_up.rds")
+saveRDS(ekegg_down,       "results/kegg_age_down.rds")
+saveRDS(ego_up_simpl,     "results/go_bp_age_up_simpl.rds")
+saveRDS(ego_down_simpl,   "results/go_bp_age_down_simpl.rds")
+
+# Reactome
+
+saveRDS(reactome_up,      "results/reactome_age_up.rds")
+saveRDS(reactome_down,    "results/reactome_age_down.rds")
+
+# GO CC
+
+saveRDS(ego_cc_up,        "results/go_cc_age_up.rds")
+saveRDS(ego_cc_down,      "results/go_cc_age_down.rds")
+saveRDS(ego_cc_up_simpl,  "results/go_cc_age_up_simpl.rds")
+saveRDS(ego_cc_down_simpl,"results/go_cc_age_down_simpl.rds")
+
+# GO MF
+
+saveRDS(ego_mf_up,        "results/go_mf_age_up.rds")
+saveRDS(ego_mf_down,      "results/go_mf_age_down.rds")
+saveRDS(ego_mf_up_simpl,  "results/go_mf_age_up_simpl.rds")
+saveRDS(ego_mf_down_simpl,"results/go_mf_age_down_simpl.rds")
+
+```
+## Ideas / ToDo
+
+```{r}
+# GO Annotations for CC (cellular components) and MF (molecular functions) ontologies
+# Use simplify on GO BP -> similar method for KEGG?
+
+# Try out GSEA (gene set enrichment analysis) instead of ORA (over-representation analysis)
+# Try out other pathway databases, e.g. ReactomePA
+# Visualize enriched pathways with pathview
+
+```
+
+
